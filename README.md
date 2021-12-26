@@ -1,2 +1,39 @@
-# hpack.cr
-This shard is a standalone implementation of HPack, the HTTP2 header compression algorithm.
+# hpack
+
+TODO: Write a description here
+
+## Installation
+
+1. Add the dependency to your `shard.yml`:
+
+   ```yaml
+   dependencies:
+     hpack:
+       github: your-github-user/hpack
+   ```
+
+2. Run `shards install`
+
+## Usage
+
+```crystal
+require "hpack"
+```
+
+TODO: Write usage instructions here
+
+## Development
+
+TODO: Write development instructions here
+
+## Contributing
+
+1. Fork it (<https://github.com/your-github-user/hpack/fork>)
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+
+## Contributors
+
+- [Kirk Haines](https://github.com/your-github-user) - creator and maintainer
