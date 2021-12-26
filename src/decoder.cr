@@ -17,30 +17,21 @@ module HPack
 
       until reader.done?
         if reader.current_byte.bit(7) == 1 # 1.......  indexed
-          index = integer(7)
-          raise Error.new("invalid index: 0") if index == 0
-          name, value = indexed(index)
+          index, name, value = literal_indexed
         elsif reader.current_byte.bit(6) == 1 # 01......  literal with incremental indexing
-          index = integer(6)
-          name = index == 0 ? string : indexed(index).first
-          value = string
-          table.add(name, value)
+          index, name, value = literal_with_incremental_indexing
         elsif reader.current_byte.bit(5) == 1 # 001.....  table max size update
           raise Error.new("unexpected dynamic table size update") if decoded_common_headers
           if (new_size = integer(5)) > max_table_size
-            raise Error.new("dynamic table size update is larger than SETTINGS_HEADER_TABLE_SIZE")
+            raise Error.new("dynamic table size update is larger than SETTINGS_HEADER_TABLE_SIZE(#{max_table_size}")
           end
           table.resize(new_size)
           next
         elsif reader.current_byte.bit(4) == 1 # 0001....  literal never indexed
-          index = integer(4)
-          name = index == 0 ? string : indexed(index).first
-          value = string
+          index, name, value = literal_never_indexed
           # TODO: retain the never_indexed property
         else # 0000....  literal without indexing
-          index = integer(4)
-          name = index == 0 ? string : indexed(index).first
-          value = string
+          index, name, value = literal_without_indexing
         end
 
         decoded_common_headers = 0 < index < STATIC_TABLE_SIZE
@@ -50,6 +41,39 @@ module HPack
       headers
     rescue ex : IndexError
       raise Error.new("invalid compression")
+    end
+
+    @[AlwaysInline]
+    def literal_indexed
+      index = integer(7)
+      raise Error.new("invalid index: 0") if index == 0
+      name, value = indexed(index)
+      {index, name, value}
+    end
+
+    @[AlwaysInline]
+    def literal_with_incremental_indexing
+      index = integer(6)
+      name = index == 0 ? string : indexed(index).first
+      value = string
+      table.add(name, value)
+      {index, name, value}
+    end
+
+    @[AlwaysInline]
+    def literal_never_indexed
+      index = integer(4)
+      name = index == 0 ? string : indexed(index).first
+      value = string
+      {index, name, value}
+    end
+
+    @[AlwaysInline]
+    def literal_without_indexing
+      index = integer(4)
+      name = index == 0 ? string : indexed(index).first
+      value = string
+      {index, name, value}
     end
 
     def indexed(index)
