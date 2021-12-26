@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 1.1.1">
+<meta name="crystal_docs.project_version" content="main">
+<meta name="crystal_docs.project_name" content="hpack">
+
+
+
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../js/doc.js"></script>
+
+  <meta name="repository-name" content="hpack">
+  <title>HPack::Indexing - hpack main</title>
+  <script type="text/javascript">
+    CrystalDocs.base_path = "../";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="../index.html">
+          hpack
+        </a>
+      </h1>
+
+      <span class="project-version">
+        main
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="hpack/HPack" data-name="hpack">
+      <a href="../HPack.html">HPack</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hpack/HPack/Decoder" data-name="hpack::decoder">
+      <a href="../HPack/Decoder.html">Decoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/DynamicTable" data-name="hpack::dynamictable">
+      <a href="../HPack/DynamicTable.html">DynamicTable</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Encoder" data-name="hpack::encoder">
+      <a href="../HPack/Encoder.html">Encoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Error" data-name="hpack::error">
+      <a href="../HPack/Error.html">Error</a>
+      
+    </li>
+  
+  <li class="parent " data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
+      <a href="../HPack/Huffman.html">Huffman</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hpack/HPack/Huffman/Node" data-name="hpack::huffman::node">
+      <a href="../HPack/Huffman/Node.html">Node</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" current" data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
+      <a href="../HPack/Indexing.html">Indexing</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/SliceReader" data-name="hpack::slicereader">
+      <a href="../HPack/SliceReader.html">SliceReader</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">enum</span> HPack::Indexing
+
+</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      <a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/indexing.cr#L3" target="_blank">
+        indexing.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+  
+    <h2>
+      <a id="enum-members" class="anchor" href="#enum-members">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+      Enum Members
+    </h2>
+  
+  <dl>
+    
+      <dt class="entry-const" id="INDEXED">
+        <strong>INDEXED</strong> = <code><span class="n">128_u8</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="ALWAYS">
+        <strong>ALWAYS</strong> = <code><span class="n">64_u8</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="NEVER">
+        <strong>NEVER</strong> = <code><span class="n">16_u8</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="NONE">
+        <strong>NONE</strong> = <code><span class="n">0_u8</span></code>
+      </dt>
+      
+    
+  </dl>
+
+
+
+
+
+
+
+  <h2>
+    <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#always%3F-instance-method" class="signature"><strong>#always?</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#indexed%3F-instance-method" class="signature"><strong>#indexed?</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#never%3F-instance-method" class="signature"><strong>#never?</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#none%3F-instance-method" class="signature"><strong>#none?</strong></a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+<div class="methods-inherited">
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+</div>
+
+
+
+
+
+
+  <h2>
+    <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="always?-instance-method">
+      <div class="signature">
+        
+        def <strong>always?</strong>
+
+        <a class="method-permalink" href="#always%3F-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/indexing.cr#L5" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="indexed?-instance-method">
+      <div class="signature">
+        
+        def <strong>indexed?</strong>
+
+        <a class="method-permalink" href="#indexed%3F-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/indexing.cr#L4" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="never?-instance-method">
+      <div class="signature">
+        
+        def <strong>never?</strong>
+
+        <a class="method-permalink" href="#never%3F-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/indexing.cr#L6" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="none?-instance-method">
+      <div class="signature">
+        
+        def <strong>none?</strong>
+
+        <a class="method-permalink" href="#none%3F-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/indexing.cr#L3" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+</div>
+
+</body>
+</html>

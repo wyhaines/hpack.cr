@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 1.1.1">
+<meta name="crystal_docs.project_version" content="main">
+<meta name="crystal_docs.project_name" content="hpack">
+
+
+
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../js/doc.js"></script>
+
+  <meta name="repository-name" content="hpack">
+  <title>HPack::SliceReader - hpack main</title>
+  <script type="text/javascript">
+    CrystalDocs.base_path = "../";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="../index.html">
+          hpack
+        </a>
+      </h1>
+
+      <span class="project-version">
+        main
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="hpack/HPack" data-name="hpack">
+      <a href="../HPack.html">HPack</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hpack/HPack/Decoder" data-name="hpack::decoder">
+      <a href="../HPack/Decoder.html">Decoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/DynamicTable" data-name="hpack::dynamictable">
+      <a href="../HPack/DynamicTable.html">DynamicTable</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Encoder" data-name="hpack::encoder">
+      <a href="../HPack/Encoder.html">Encoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Error" data-name="hpack::error">
+      <a href="../HPack/Error.html">Error</a>
+      
+    </li>
+  
+  <li class="parent " data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
+      <a href="../HPack/Huffman.html">Huffman</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hpack/HPack/Huffman/Node" data-name="hpack::huffman::node">
+      <a href="../HPack/Huffman/Node.html">Node</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
+      <a href="../HPack/Indexing.html">Indexing</a>
+      
+    </li>
+  
+  <li class=" current" data-id="hpack/HPack/SliceReader" data-name="hpack::slicereader">
+      <a href="../HPack/SliceReader.html">SliceReader</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">class</span> HPack::SliceReader
+
+</h1>
+
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/SliceReader.html">HPack::SliceReader</a></li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      <a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L2" target="_blank">
+        slice_reader.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+
+
+  <h2>
+    <a id="constructors" class="anchor" href="#constructors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructors
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new%28bytes%3ABytes%2Cdefault_endianness%3DIO%3A%3AByteFormat%3A%3ASystemEndian%29-class-method" class="signature"><strong>.new</strong>(bytes : Bytes, default_endianness = <span class="t">IO</span><span class="t">::</span><span class="t">ByteFormat</span><span class="t">::</span><span class="t">SystemEndian</span>)</a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+  <h2>
+    <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#bytes%3ABytes-instance-method" class="signature"><strong>#bytes</strong> : Bytes</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#current_byte-instance-method" class="signature"><strong>#current_byte</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#default_endianness%3AIO%3A%3AByteFormat-instance-method" class="signature"><strong>#default_endianness</strong> : IO::ByteFormat</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#done%3F-instance-method" class="signature"><strong>#done?</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#offset%3AInt32-instance-method" class="signature"><strong>#offset</strong> : Int32</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read%28count%29-instance-method" class="signature"><strong>#read</strong>(count)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_byte-instance-method" class="signature"><strong>#read_byte</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_bytes%28type%3AUInt8.class%2Cendianness%3Ddefault_endianness%29-instance-method" class="signature"><strong>#read_bytes</strong>(type : <span class="t">UInt8</span>.<span class="k">class</span>, endianness = default_endianness)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_bytes%28type%3AInt8.class%2Cendianness%3Ddefault_endianness%29-instance-method" class="signature"><strong>#read_bytes</strong>(type : <span class="t">Int8</span>.<span class="k">class</span>, endianness = default_endianness)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_bytes%28type%3AUInt16.class%2Cendianness%3Ddefault_endianness%29-instance-method" class="signature"><strong>#read_bytes</strong>(type : <span class="t">UInt16</span>.<span class="k">class</span>, endianness = default_endianness)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_bytes%28type%3AInt16.class%2Cendianness%3Ddefault_endianness%29-instance-method" class="signature"><strong>#read_bytes</strong>(type : <span class="t">Int16</span>.<span class="k">class</span>, endianness = default_endianness)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_bytes%28type%3AUInt32.class%2Cendianness%3Ddefault_endianness%29-instance-method" class="signature"><strong>#read_bytes</strong>(type : <span class="t">UInt32</span>.<span class="k">class</span>, endianness = default_endianness)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_bytes%28type%3AInt32.class%2Cendianness%3Ddefault_endianness%29-instance-method" class="signature"><strong>#read_bytes</strong>(type : <span class="t">Int32</span>.<span class="k">class</span>, endianness = default_endianness)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_bytes%28type%3AUInt64.class%2Cendianness%3Ddefault_endianness%29-instance-method" class="signature"><strong>#read_bytes</strong>(type : <span class="t">UInt64</span>.<span class="k">class</span>, endianness = default_endianness)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#read_bytes%28type%3AInt64.class%2Cendianness%3Ddefault_endianness%29-instance-method" class="signature"><strong>#read_bytes</strong>(type : <span class="t">Int64</span>.<span class="k">class</span>, endianness = default_endianness)</a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+<div class="methods-inherited">
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+</div>
+
+
+  <h2>
+    <a id="constructor-detail" class="anchor" href="#constructor-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructor Detail
+  </h2>
+  
+    <div class="entry-detail" id="new(bytes:Bytes,default_endianness=IO::ByteFormat::SystemEndian)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(bytes : Bytes, default_endianness = <span class="t">IO</span><span class="t">::</span><span class="t">ByteFormat</span><span class="t">::</span><span class="t">SystemEndian</span>)
+
+        <a class="method-permalink" href="#new%28bytes%3ABytes%2Cdefault_endianness%3DIO%3A%3AByteFormat%3A%3ASystemEndian%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L7" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+
+  <h2>
+    <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="bytes:Bytes-instance-method">
+      <div class="signature">
+        
+        def <strong>bytes</strong> : Bytes
+
+        <a class="method-permalink" href="#bytes%3ABytes-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L4" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="current_byte-instance-method">
+      <div class="signature">
+        
+        def <strong>current_byte</strong>
+
+        <a class="method-permalink" href="#current_byte-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L15" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="default_endianness:IO::ByteFormat-instance-method">
+      <div class="signature">
+        
+        def <strong>default_endianness</strong> : IO::ByteFormat
+
+        <a class="method-permalink" href="#default_endianness%3AIO%3A%3AByteFormat-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L5" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="done?-instance-method">
+      <div class="signature">
+        
+        def <strong>done?</strong>
+
+        <a class="method-permalink" href="#done%3F-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L11" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="offset:Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>offset</strong> : Int32
+
+        <a class="method-permalink" href="#offset%3AInt32-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L3" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read(count)-instance-method">
+      <div class="signature">
+        
+        def <strong>read</strong>(count)
+
+        <a class="method-permalink" href="#read%28count%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L40" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_byte-instance-method">
+      <div class="signature">
+        
+        def <strong>read_byte</strong>
+
+        <a class="method-permalink" href="#read_byte-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L19" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_bytes(type:UInt8.class,endianness=default_endianness)-instance-method">
+      <div class="signature">
+        
+        def <strong>read_bytes</strong>(type : <span class="t">UInt8</span>.<span class="k">class</span>, endianness = default_endianness)
+
+        <a class="method-permalink" href="#read_bytes%28type%3AUInt8.class%2Cendianness%3Ddefault_endianness%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_bytes(type:Int8.class,endianness=default_endianness)-instance-method">
+      <div class="signature">
+        
+        def <strong>read_bytes</strong>(type : <span class="t">Int8</span>.<span class="k">class</span>, endianness = default_endianness)
+
+        <a class="method-permalink" href="#read_bytes%28type%3AInt8.class%2Cendianness%3Ddefault_endianness%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_bytes(type:UInt16.class,endianness=default_endianness)-instance-method">
+      <div class="signature">
+        
+        def <strong>read_bytes</strong>(type : <span class="t">UInt16</span>.<span class="k">class</span>, endianness = default_endianness)
+
+        <a class="method-permalink" href="#read_bytes%28type%3AUInt16.class%2Cendianness%3Ddefault_endianness%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_bytes(type:Int16.class,endianness=default_endianness)-instance-method">
+      <div class="signature">
+        
+        def <strong>read_bytes</strong>(type : <span class="t">Int16</span>.<span class="k">class</span>, endianness = default_endianness)
+
+        <a class="method-permalink" href="#read_bytes%28type%3AInt16.class%2Cendianness%3Ddefault_endianness%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_bytes(type:UInt32.class,endianness=default_endianness)-instance-method">
+      <div class="signature">
+        
+        def <strong>read_bytes</strong>(type : <span class="t">UInt32</span>.<span class="k">class</span>, endianness = default_endianness)
+
+        <a class="method-permalink" href="#read_bytes%28type%3AUInt32.class%2Cendianness%3Ddefault_endianness%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_bytes(type:Int32.class,endianness=default_endianness)-instance-method">
+      <div class="signature">
+        
+        def <strong>read_bytes</strong>(type : <span class="t">Int32</span>.<span class="k">class</span>, endianness = default_endianness)
+
+        <a class="method-permalink" href="#read_bytes%28type%3AInt32.class%2Cendianness%3Ddefault_endianness%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_bytes(type:UInt64.class,endianness=default_endianness)-instance-method">
+      <div class="signature">
+        
+        def <strong>read_bytes</strong>(type : <span class="t">UInt64</span>.<span class="k">class</span>, endianness = default_endianness)
+
+        <a class="method-permalink" href="#read_bytes%28type%3AUInt64.class%2Cendianness%3Ddefault_endianness%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="read_bytes(type:Int64.class,endianness=default_endianness)-instance-method">
+      <div class="signature">
+        
+        def <strong>read_bytes</strong>(type : <span class="t">Int64</span>.<span class="k">class</span>, endianness = default_endianness)
+
+        <a class="method-permalink" href="#read_bytes%28type%3AInt64.class%2Cendianness%3Ddefault_endianness%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/slice_reader.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+</div>
+
+</body>
+</html>

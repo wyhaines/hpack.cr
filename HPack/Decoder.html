@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 1.1.1">
+<meta name="crystal_docs.project_version" content="main">
+<meta name="crystal_docs.project_name" content="hpack">
+
+
+
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../js/doc.js"></script>
+
+  <meta name="repository-name" content="hpack">
+  <title>HPack::Decoder - hpack main</title>
+  <script type="text/javascript">
+    CrystalDocs.base_path = "../";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="../index.html">
+          hpack
+        </a>
+      </h1>
+
+      <span class="project-version">
+        main
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="hpack/HPack" data-name="hpack">
+      <a href="../HPack.html">HPack</a>
+      
+        <ul>
+  
+  <li class=" current" data-id="hpack/HPack/Decoder" data-name="hpack::decoder">
+      <a href="../HPack/Decoder.html">Decoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/DynamicTable" data-name="hpack::dynamictable">
+      <a href="../HPack/DynamicTable.html">DynamicTable</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Encoder" data-name="hpack::encoder">
+      <a href="../HPack/Encoder.html">Encoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Error" data-name="hpack::error">
+      <a href="../HPack/Error.html">Error</a>
+      
+    </li>
+  
+  <li class="parent " data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
+      <a href="../HPack/Huffman.html">Huffman</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hpack/HPack/Huffman/Node" data-name="hpack::huffman::node">
+      <a href="../HPack/Huffman/Node.html">Node</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
+      <a href="../HPack/Indexing.html">Indexing</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/SliceReader" data-name="hpack::slicereader">
+      <a href="../HPack/SliceReader.html">SliceReader</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">struct</span> HPack::Decoder
+
+</h1>
+
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/Decoder.html">HPack::Decoder</a></li><li class="superclass">Struct</li><li class="superclass">Value</li><li class="superclass">Object</li></ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      <a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L5" target="_blank">
+        decoder.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+
+
+  <h2>
+    <a id="constructors" class="anchor" href="#constructors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructors
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new%28max_table_size%3D4096%29-class-method" class="signature"><strong>.new</strong>(max_table_size = <span class="n">4096</span>)</a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+  <h2>
+    <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#decode%28bytes%2Cheaders%3DHTTP%3A%3AHeaders.new%29-instance-method" class="signature"><strong>#decode</strong>(bytes, headers = <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.<span class="k">new</span>)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#indexed%28index%29-instance-method" class="signature"><strong>#indexed</strong>(index)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#integer%28n%29-instance-method" class="signature"><strong>#integer</strong>(n)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#literal_indexed-instance-method" class="signature"><strong>#literal_indexed</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#literal_never_indexed-instance-method" class="signature"><strong>#literal_never_indexed</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#literal_with_incremental_indexing-instance-method" class="signature"><strong>#literal_with_incremental_indexing</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#literal_without_indexing-instance-method" class="signature"><strong>#literal_without_indexing</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#max_table_size%3AInt32-instance-method" class="signature"><strong>#max_table_size</strong> : Int32</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#max_table_size%3D%28max_table_size%3AInt32%29-instance-method" class="signature"><strong>#max_table_size=</strong>(max_table_size : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#string-instance-method" class="signature"><strong>#string</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#table%3ADynamicTable-instance-method" class="signature"><strong>#table</strong> : DynamicTable</a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+<div class="methods-inherited">
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+</div>
+
+
+  <h2>
+    <a id="constructor-detail" class="anchor" href="#constructor-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructor Detail
+  </h2>
+  
+    <div class="entry-detail" id="new(max_table_size=4096)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(max_table_size = <span class="n">4096</span>)
+
+        <a class="method-permalink" href="#new%28max_table_size%3D4096%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L10" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+
+  <h2>
+    <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="decode(bytes,headers=HTTP::Headers.new)-instance-method">
+      <div class="signature">
+        
+        def <strong>decode</strong>(bytes, headers = <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.<span class="k">new</span>)
+
+        <a class="method-permalink" href="#decode%28bytes%2Cheaders%3DHTTP%3A%3AHeaders.new%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L14" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="indexed(index)-instance-method">
+      <div class="signature">
+        
+        def <strong>indexed</strong>(index)
+
+        <a class="method-permalink" href="#indexed%28index%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L79" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="integer(n)-instance-method">
+      <div class="signature">
+        
+        def <strong>integer</strong>(n)
+
+        <a class="method-permalink" href="#integer%28n%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L93" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="literal_indexed-instance-method">
+      <div class="signature">
+        
+        def <strong>literal_indexed</strong>
+
+        <a class="method-permalink" href="#literal_indexed-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L47" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="literal_never_indexed-instance-method">
+      <div class="signature">
+        
+        def <strong>literal_never_indexed</strong>
+
+        <a class="method-permalink" href="#literal_never_indexed-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L64" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="literal_with_incremental_indexing-instance-method">
+      <div class="signature">
+        
+        def <strong>literal_with_incremental_indexing</strong>
+
+        <a class="method-permalink" href="#literal_with_incremental_indexing-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L55" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="literal_without_indexing-instance-method">
+      <div class="signature">
+        
+        def <strong>literal_without_indexing</strong>
+
+        <a class="method-permalink" href="#literal_without_indexing-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L72" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="max_table_size:Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>max_table_size</strong> : Int32
+
+        <a class="method-permalink" href="#max_table_size%3AInt32-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L8" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="max_table_size=(max_table_size:Int32)-instance-method">
+      <div class="signature">
+        
+        def <strong>max_table_size=</strong>(max_table_size : Int32)
+
+        <a class="method-permalink" href="#max_table_size%3D%28max_table_size%3AInt32%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L8" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="string-instance-method">
+      <div class="signature">
+        
+        def <strong>string</strong>
+
+        <a class="method-permalink" href="#string-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L110" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="table:DynamicTable-instance-method">
+      <div class="signature">
+        
+        def <strong>table</strong> : <a href="../HPack/DynamicTable.html">DynamicTable</a>
+
+        <a class="method-permalink" href="#table%3ADynamicTable-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/5cc466e136f8944f7fa17e0950b8d2de7f9d5d65/src/decoder.cr#L7" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+</div>
+
+</body>
+</html>

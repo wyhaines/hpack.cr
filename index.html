@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 1.1.1">
+<meta name="crystal_docs.project_version" content="main">
+<meta name="crystal_docs.project_name" content="hpack">
+
+
+
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/doc.js"></script>
+
+  <meta name="repository-name" content="hpack">
+  <title>hpack main</title>
+  <script type="text/javascript">
+  CrystalDocs.base_path = "";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="index.html">
+          hpack
+        </a>
+      </h1>
+
+      <span class="project-version">
+        main
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent " data-id="hpack/HPack" data-name="hpack">
+      <a href="HPack.html">HPack</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hpack/HPack/Decoder" data-name="hpack::decoder">
+      <a href="HPack/Decoder.html">Decoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/DynamicTable" data-name="hpack::dynamictable">
+      <a href="HPack/DynamicTable.html">DynamicTable</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Encoder" data-name="hpack::encoder">
+      <a href="HPack/Encoder.html">Encoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Error" data-name="hpack::error">
+      <a href="HPack/Error.html">Error</a>
+      
+    </li>
+  
+  <li class="parent " data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
+      <a href="HPack/Huffman.html">Huffman</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hpack/HPack/Huffman/Node" data-name="hpack::huffman::node">
+      <a href="HPack/Huffman/Node.html">Node</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
+      <a href="HPack/Indexing.html">Indexing</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/SliceReader" data-name="hpack::slicereader">
+      <a href="HPack/SliceReader.html">SliceReader</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1><a id="hpack" class="anchor" href="#hpack">  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>hpack</h1>
+<p><img src="https://img.shields.io/github/workflow/status/wyhaines/hpack.cr/HPack%20CI?style=for-the-badge&amp;logo=GitHub" alt="Send.cr CI" />
+<a href="https://github.com/wyhaines/hpack.cr/releases"><img src="https://img.shields.io/github/release/wyhaines/hpack.cr.svg?style=for-the-badge" alt="GitHub release" /></a>
+<img src="https://img.shields.io/github/commits-since/wyhaines/hpack.cr/latest?style=for-the-badge" alt="GitHub commits since latest release (by SemVer)" /></p>
+<p>This shard provides a standalone, pure Crystal <a href="https://httpwg.org/specs/rfc7541.html">HPack</a> implementation. HPack is a Huffman-based header compression format that is used with HTTP/2.</p>
+<p>This implementation is based on <a href="https://github.com/ysbaddaden">@ysbaddaden</a>'s implementation that is bundled inside of his <a href="https://github.com/ysbaddaden/http2">http2</a> server &amp; client shard, with some modest refactoring and improvements, packaged and maintained for current Crystal versions.</p>
+<h2><a id="installation" class="anchor" href="#installation">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Installation</h2>
+<ol>
+<li>
+<p>Add the dependency to your <code>shard.yml</code>:</p>
+<pre><code class="language-yaml">dependencies:
+  hpack:
+    github: wyhaines/hpack.cr</code></pre>
+</li>
+<li>
+<p>Run <code>shards install</code></p>
+</li>
+</ol>
+<h2><a id="usage" class="anchor" href="#usage">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Usage</h2>
+<pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hpack&quot;</span></code></pre>
+<p>There are two main classes provided by this shard, <code><a href="HPack/Encoder.html">HPack::Encoder</a></code> and <code><a href="HPack/Decoder.html">HPack::Decoder</a></code>. Thd default Encoder will be created with Indexing set to (<code>NONE</code>)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.</p>
+<pre><code class="language-crystal"><span class="c"># To create a default Encoder:</span>
+encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>
+
+<span class="c"># To create an encoder with indexing set to Always and Huffamn encoding set to true:</span>
+encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>(indexing: <span class="t">HPack</span><span class="t">::</span><span class="t">Indexing</span><span class="t">::</span><span class="t">ALWAYS</span>, huffman: <span class="n">true</span>)
+encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>(<span class="t">HPack</span><span class="t">::</span><span class="t">Indexing</span><span class="t">::</span><span class="t">ALWAYS</span>, <span class="n">true</span>)
+
+<span class="c"># To create an encoder with the max table size set to 8k (8096 bytes):</span>
+encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>(<span class="t">HPack</span><span class="t">::</span><span class="t">Indexing</span><span class="t">::</span><span class="t">ALWAYS</span>, <span class="n">true</span>, <span class="n">8096</span>)
+
+<span class="c"># To encode headers:</span>
+encoder.encode(
+  <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span> {
+    <span class="s">&quot;:status&quot;</span>       => <span class="s">&quot;302&quot;</span>,
+    <span class="s">&quot;cache-control&quot;</span> => <span class="s">&quot;private&quot;</span>,
+    <span class="s">&quot;date&quot;</span>          => <span class="s">&quot;Mon, 21 Oct 2013 20:13:21 GMT&quot;</span>,
+    <span class="s">&quot;location&quot;</span>      => <span class="s">&quot;https://www.example.com&quot;</span>
+  }
+)</code></pre>
+<p>To decode headers, used a <code><a href="HPack/Decoder.html">HPack::Decoder</a></code> instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.</p>
+<pre><code class="language-crystal"><span class="c"># To create a default Decoder:</span>
+decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.<span class="k">new</span>
+
+<span class="c"># To create a decoder with a larger table size:</span>
+decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.<span class="k">new</span>(<span class="n">8192</span>)
+
+<span class="c"># To decode headers:</span>
+headers <span class="o">=</span> decoder.decode(bytes)
+
+<span class="c"># To decode headers into an existing `HTTP::Headers` instance:</span>
+headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.<span class="k">new</span>)</code></pre>
+<h2><a id="contributing" class="anchor" href="#contributing">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Contributing</h2>
+<ol>
+<li>Fork it (<a href="https://github.com/wyhaines/hpack/fork">https://github.com/wyhaines/hpack/fork</a>)</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create a new Pull Request</li>
+</ol>
+<h2><a id="contributors" class="anchor" href="#contributors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Contributors</h2>
+<ul>
+<li><a href="https://github.com/wyhaines">Kirk Haines</a> - creator and maintainer</li>
+</ul>
+<p><img src="https://img.shields.io/github/languages/code-size/wyhaines/hack.cr?style=for-the-badge" alt="GitHub code size in bytes" />
+<img src="https://img.shields.io/github/issues/wyhaines/hack.cr?style=for-the-badge" alt="GitHub issues" /></p>
+</div>
+</body>
+</html>
