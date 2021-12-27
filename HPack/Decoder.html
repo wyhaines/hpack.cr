@@ -134,12 +134,18 @@
     Overview
   </h2>
 
-  <h1><a id="to-decode-headers-into-an-existing-httpheaders-instance" class="anchor" href="#to-decode-headers-into-an-existing-httpheaders-instance">  <svg class="octicon-link" aria-hidden="true">
-    <use href="#octicon-link"/>
-  </svg>
-</a>To decode headers into an existing <code>HTTP::Headers</code> instance:</h1>
-<p>headers = decoder.decode(bytes, HTTP::Headers.new)</p>
-<pre><code class="language-crystal"></code></pre>
+  <p>To decode headers, used a <code><a href="../HPack/Decoder.html">HPack::Decoder</a></code> instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.</p>
+<pre><code class="language-crystal"><span class="c"># To create a default Decoder:</span>
+decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.<span class="k">new</span>
+
+<span class="c"># To create a decoder with a larger table size:</span>
+decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.<span class="k">new</span>(<span class="n">8192</span>)
+
+<span class="c"># To decode headers:</span>
+headers <span class="o">=</span> decoder.decode(bytes)
+
+<span class="c"># To decode headers into an existing `HTTP::Headers` instance:</span>
+headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.<span class="k">new</span>)</code></pre>
 
 
 
@@ -164,7 +170,7 @@
   </h2>
   
     
-      <a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L20" target="_blank">
+      <a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L20" target="_blank">
         decoder.cr
       </a>
     
@@ -322,7 +328,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L25" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L25" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -352,7 +358,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L29" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L29" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -368,7 +374,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L94" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L94" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -384,7 +390,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L108" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L108" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -400,7 +406,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L62" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L62" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -416,7 +422,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L79" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L79" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -432,7 +438,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L70" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L70" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -448,7 +454,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L87" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L87" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -464,7 +470,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L23" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L23" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -480,7 +486,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L23" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L23" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -496,7 +502,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L125" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L125" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -512,7 +518,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/decoder.cr#L22" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/b6e5d96502280b6558396bbbbaa555ae91a57ce2/src/decoder.cr#L22" target="_blank">View source</a>]
         
       </div>
     </div>

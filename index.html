@@ -144,7 +144,7 @@
   </svg>
 </a>Usage</h2>
 <pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hpack&quot;</span></code></pre>
-<p>There are two main classes provided by this shard, <code><a href="HPack/Encoder.html">HPack::Encoder</a></code> and <code><a href="HPack/Decoder.html">HPack::Decoder</a></code>. The default Encoder will be created with Indexing set to (<code>NONE</code>)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.</p>
+<p>There are two main classes provided by this shard, <code><a href="HPack/Encoder.html">HPack::Encoder</a></code> and <code><a href="HPack/Decoder.html">HPack::Decoder</a></code>. The default Encoder will be created with Indexing set to <a href="https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing"><code>NONE</code></a>, huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.</p>
 <pre><code class="language-crystal"><span class="c"># To create a default Encoder:</span>
 encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>
 
