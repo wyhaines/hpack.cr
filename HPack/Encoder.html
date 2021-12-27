@@ -134,19 +134,26 @@
     Overview
   </h2>
 
-  <h1><a id="to-encode-headers" class="anchor" href="#to-encode-headers">  <svg class="octicon-link" aria-hidden="true">
-    <use href="#octicon-link"/>
-  </svg>
-</a>To encode headers:</h1>
-<p>encoder.encode(
-HTTP::Headers {
-&quot;:status&quot;       =&gt; &quot;302&quot;,
-&quot;cache-control&quot; =&gt; &quot;private&quot;,
-&quot;date&quot;          =&gt; &quot;Mon, 21 Oct 2013 20:13:21 GMT&quot;,
-&quot;location&quot;      =&gt; &quot;https://www.example.com&quot;
-}
-)</p>
-<pre><code class="language-crystal"></code></pre>
+  <p>The default Encoder will be created with Indexing set to (<code>NONE</code>)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.</p>
+<pre><code class="language-crystal"><span class="c"># To create a default Encoder:</span>
+encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>
+
+<span class="c"># To create an encoder with indexing set to Always and Huffamn encoding set to true:</span>
+encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>(indexing: <span class="t">HPack</span><span class="t">::</span><span class="t">Indexing</span><span class="t">::</span><span class="t">ALWAYS</span>, huffman: <span class="n">true</span>)
+encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>(<span class="t">HPack</span><span class="t">::</span><span class="t">Indexing</span><span class="t">::</span><span class="t">ALWAYS</span>, <span class="n">true</span>)
+
+<span class="c"># To create an encoder with the max table size set to 8k (8096 bytes):</span>
+encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>(<span class="t">HPack</span><span class="t">::</span><span class="t">Indexing</span><span class="t">::</span><span class="t">ALWAYS</span>, <span class="n">true</span>, <span class="n">8096</span>)
+
+<span class="c"># To encode headers:</span>
+encoder.encode(
+  <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span> {
+    <span class="s">&quot;:status&quot;</span>       => <span class="s">&quot;302&quot;</span>,
+    <span class="s">&quot;cache-control&quot;</span> => <span class="s">&quot;private&quot;</span>,
+    <span class="s">&quot;date&quot;</span>          => <span class="s">&quot;Mon, 21 Oct 2013 20:13:21 GMT&quot;</span>,
+    <span class="s">&quot;location&quot;</span>      => <span class="s">&quot;https://www.example.com&quot;</span>
+  }
+)</code></pre>
 
 
 
@@ -171,7 +178,7 @@ HTTP::Headers {
   </h2>
   
     
-      <a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L33" target="_blank">
+      <a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L33" target="_blank">
         encoder.cr
       </a>
     
@@ -309,7 +316,7 @@ HTTP::Headers {
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L46" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L46" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -339,7 +346,7 @@ HTTP::Headers {
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L41" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L41" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -355,7 +362,7 @@ HTTP::Headers {
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L41" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L41" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -371,7 +378,7 @@ HTTP::Headers {
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L40" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L40" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -387,7 +394,7 @@ HTTP::Headers {
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L40" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L40" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -403,7 +410,7 @@ HTTP::Headers {
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L53" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L53" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -419,7 +426,7 @@ HTTP::Headers {
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L85" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L85" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -435,7 +442,7 @@ HTTP::Headers {
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L39" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/7d3493cf249591411bff584e7ab6590ba3f81ee2/src/encoder.cr#L39" target="_blank">View source</a>]
         
       </div>
     </div>
