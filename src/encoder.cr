@@ -82,7 +82,8 @@ module HPack
       {% end %}
     end
 
-    def encode(name, values, indexing, huffman)
+    # :nodoc:
+    protected def encode(name, values, indexing, huffman)
       values.each do |value|
         if header = indexed(name, value)
           if header[1]
