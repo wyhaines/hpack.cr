@@ -64,11 +64,6 @@ module HPack
     {"www-authenticate", ""},
   }
 
-  STATIC_TABLE_LOOKUP = {} of Tuple(String, String) => Int32
-  STATIC_TABLE.each_with_index do |header, index|
-    STATIC_TABLE_LOOKUP[header] = index
-  end
-
   # :nodoc:
   STATIC_TABLE_SIZE = STATIC_TABLE.size
 end

@@ -1,54 +1,43 @@
 module HPack
-  class DynamicTable
-    getter bytesize : Int32
-    getter maximum : Int32
 
-    def initialize(@maximum)
-      @bytesize = 0
-      @table = Deque(Tuple(String, String)).new
+  # The DynamicTable is a table of header names and values. It is implemented as a
+  # subclass of a Deque in order to get access to all of the iteration and interrogation
+  # methods without having to write methods which explicitly wrap them. Fewer lines to
+  # maintain is a win. As a caveat, though, do not interact with the storage or deletion
+  # of data via any methods other than `#add` and `#clear`, as the native `Deque` methods
+  # will not keep an accurate tally of the bytesize of the structure.
+  class DynamicTable < Deque(Tuple(String, String))
+    getter bytesize : Int32 = 0
+    property maximum : Int32 = 4096
+
+    def initialize(@maximum = 4096)
+      super()
     end
 
     def add(name, value)
       header = {name, value}
-      @table.unshift(header)
+      self.unshift header
       @bytesize += count(header)
       cleanup
     end
 
-    def [](index)
-      @table[index]
-    end
-
-    def []?(index)
-      @table[index]?
-    end
-
-    def each
-      @table.each { |header, index| yield header, index }
-    end
-
-    def each_with_index
-      @table.each_with_index { |header, index| yield header, index }
-    end
-
-    def size
-      @table.size
-    end
-
-    def empty?
-      @table.empty?
+    def clear
+      @bytesize = 0
+      super
     end
 
     def resize(@maximum)
       cleanup
     end
 
+    @[AlwaysInline]
     private def cleanup
       while bytesize > maximum
-        @bytesize -= count(@table.pop)
+        @bytesize -= count(pop)
       end
     end
 
+    @[AlwaysInline]
     private def count(header)
       header[0].bytesize + header[1].bytesize + 32
     end

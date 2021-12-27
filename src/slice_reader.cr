@@ -8,14 +8,17 @@ module HPack
       @offset = 0
     end
 
+    @[AlwaysInline]
     def done?
       offset >= bytes.size
     end
 
+    @[AlwaysInline]
     def current_byte
       bytes[offset]
     end
 
+    @[AlwaysInline]
     def read_byte
       current_byte.tap { @offset += 1 }
     end

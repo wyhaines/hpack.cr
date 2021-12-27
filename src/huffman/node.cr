@@ -5,6 +5,7 @@ module HPack
       property right : Node? # bit 1
       property value : UInt8?
 
+      @[AlwaysInline]
       def leaf?
         left.nil? && right.nil?
       end

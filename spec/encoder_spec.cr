@@ -106,7 +106,7 @@ describe HPack::Encoder do
       "date"          => "Mon, 21 Oct 2013 20:13:21 GMT",
       "location"      => "https://www.example.com",
     }
-    UInt8.static_array(0x48, 0x03, 0x33, 0x30, 0x37, 0xc1, 0xc0, 0xbf).to_slice.should eq encoder.encode(headers)
+    encoder.encode(headers).should eq UInt8.static_array(0x48, 0x03, 0x33, 0x30, 0x37, 0xc1, 0xc0, 0xbf).to_slice
 
     encoder.table.size.should eq 4
     encoder.table.bytesize.should eq 222

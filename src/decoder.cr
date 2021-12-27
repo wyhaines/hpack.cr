@@ -2,6 +2,21 @@ require "./slice_reader"
 require "./error"
 
 module HPack
+  # To decode headers, used a `HPack::Decoder` instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.
+
+  # ```crystal
+  # # To create a default Decoder:
+  # decoder = HPack::Decoder.new
+
+  # # To create a decoder with a larger table size:
+  # decoder = HPack::Decoder.new(8192)
+
+  # # To decode headers:
+  # headers = decoder.decode(bytes)
+
+  # # To decode headers into an existing `HTTP::Headers` instance:
+  # headers = decoder.decode(bytes, HTTP::Headers.new)
+  # ```
   struct Decoder
     private getter! reader : SliceReader
     getter table : DynamicTable

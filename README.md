@@ -6,7 +6,7 @@
 
 This shard provides a standalone, pure Crystal [HPack](https://httpwg.org/specs/rfc7541.html) implementation. HPack is a Huffman-based header compression format that is used with HTTP/2.
 
-This implementation is based on [@ysbaddaden](https://github.com/ysbaddaden)'s implementation that is bundled inside of his [http2](https://github.com/ysbaddaden/http2) server & client shard, with some modest refactoring and improvements, packaged and maintained for current Crystal versions.
+This implementation is based on [@ysbaddaden](https://github.com/ysbaddaden)'s implementation that is bundled inside of his [http2](https://github.com/ysbaddaden/http2) server & client shard, with some modest refactoring and significant improvements, packaged and maintained for current Crystal versions.
 
 ## Installation
 
@@ -26,7 +26,7 @@ This implementation is based on [@ysbaddaden](https://github.com/ysbaddaden)'s i
 require "hpack"
 ```
 
-There are two main classes provided by this shard, `HPack::Encoder` and `HPack::Decoder`. Thd default Encoder will be created with Indexing set to (`NONE`)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.
+There are two main classes provided by this shard, `HPack::Encoder` and `HPack::Decoder`. The default Encoder will be created with Indexing set to (`NONE`)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.
 
 ```crystal
 # To create a default Encoder:

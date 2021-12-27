@@ -1,9 +1,18 @@
 require "./huffman/node"
+{% if flag?(:preview_mt) %}
+  require "mutex"
+{% end %}
 
 module HPack
   class Huffman
     private getter tree : Node
     private getter table : Array({UInt8, Int32, Int32})
+    # Reuse a single IO::Memory per instance instead of creating a new one every time.
+    # This makes a tremendous difference in decode performance.
+    @io = IO::Memory.new
+    {% if flag?(:preview_mt) %}
+      @mutex = Mutex.new
+    {% end %}
 
     def initialize(@table)
       @tree = Node.new
@@ -35,7 +44,11 @@ module HPack
     end
 
     def decode(bytes : Bytes)
-      io = IO::Memory.new
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      @io.clear
       node = tree
       eos_padding = true
 
@@ -54,7 +67,7 @@ module HPack
           raise Error.new("node is nil!") unless node
 
           if value = node.value
-            io.write_byte(value)
+            @io.write_byte(value)
             node = tree
 
             byte_has_value = true
@@ -69,7 +82,11 @@ module HPack
       # RFC 7541, section 5.2
       raise Error.new("huffman string padding must use MSB of EOS symbol") unless eos_padding
 
-      io.to_s
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+      @io.to_s
     end
   end
 
