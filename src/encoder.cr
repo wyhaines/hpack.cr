@@ -7,7 +7,7 @@ require "./huffman"
 {% end %}
 
 module HPack
-  # The default Encoder will be created with Indexing set to (`NONE`)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.
+  # The default Encoder will be created with Indexing set to [`NONE`](https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing), huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.
   #
   # ```crystal
   # # To create a default Encoder:

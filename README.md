@@ -26,7 +26,7 @@ This implementation is based on [@ysbaddaden](https://github.com/ysbaddaden)'s i
 require "hpack"
 ```
 
-There are two main classes provided by this shard, `HPack::Encoder` and `HPack::Decoder`. The default Encoder will be created with Indexing set to (`NONE`)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.
+There are two main classes provided by this shard, `HPack::Encoder` and `HPack::Decoder`. The default Encoder will be created with Indexing set to [`NONE`](https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing), huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.
 
 ```crystal
 # To create a default Encoder:
