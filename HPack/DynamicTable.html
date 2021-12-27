@@ -120,10 +120,26 @@
 </h1>
 
 
-  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/DynamicTable.html">HPack::DynamicTable</a></li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/DynamicTable.html">HPack::DynamicTable</a></li><li class="superclass">Deque({String, String})</li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
 
 
 
+
+  <h2>
+    <a id="overview" class="anchor" href="#overview">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Overview
+  </h2>
+
+  <p>The DynamicTable is a table of header names and values. It is implemented as a
+subclass of a Deque in order to get access to all of the iteration and interrogation
+methods without having to write methods which explicitly wrap them. Fewer lines to
+maintain is a win. As a caveat, though, do not interact with the storage or deletion
+of data via any methods other than <code><a href="../HPack/DynamicTable.html#add%28name%2Cvalue%29-instance-method">#add</a></code> and <code><a href="../HPack/DynamicTable.html#clear-instance-method">#clear</a></code>, as the native <code>Deque</code> methods
+will not keep an accurate tally of the bytesize of the structure.</p>
 
 
 
@@ -148,7 +164,7 @@
   </h2>
   
     
-      <a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L2" target="_blank">
+      <a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/dynamic_table.cr#L9" target="_blank">
         dynamic_table.cr
       </a>
     
@@ -170,7 +186,7 @@
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#new%28maximum%29-class-method" class="signature"><strong>.new</strong>(maximum)</a>
+        <a href="#new%28maximum%3D4096%29-class-method" class="signature"><strong>.new</strong>(maximum = <span class="n">4096</span>)</a>
         
       </li>
     
@@ -191,16 +207,6 @@
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#%5B%5D%28index%29-instance-method" class="signature"><strong>#[]</strong>(index)</a>
-        
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#%5B%5D%3F%28index%29-instance-method" class="signature"><strong>#[]?</strong>(index)</a>
-        
-      </li>
-    
-      <li class="entry-summary">
         <a href="#add%28name%2Cvalue%29-instance-method" class="signature"><strong>#add</strong>(name, value)</a>
         
       </li>
@@ -211,17 +217,9 @@
       </li>
     
       <li class="entry-summary">
-        <a href="#each%28%26%29-instance-method" class="signature"><strong>#each</strong>(&)</a>
+        <a href="#clear-instance-method" class="signature"><strong>#clear</strong></a>
         
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#each_with_index%28%26%29-instance-method" class="signature"><strong>#each_with_index</strong>(&)</a>
-        
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#empty%3F-instance-method" class="signature"><strong>#empty?</strong></a>
+          <div class="summary"><p>Removes all elements from <code>self</code>.</p></div>
         
       </li>
     
@@ -231,12 +229,12 @@
       </li>
     
       <li class="entry-summary">
-        <a href="#resize%28maximum%29-instance-method" class="signature"><strong>#resize</strong>(maximum)</a>
+        <a href="#maximum%3D%28maximum%3AInt32%29-instance-method" class="signature"><strong>#maximum=</strong>(maximum : Int32)</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#size-instance-method" class="signature"><strong>#size</strong></a>
+        <a href="#resize%28maximum%29-instance-method" class="signature"><strong>#resize</strong>(maximum)</a>
         
       </li>
     
@@ -247,6 +245,56 @@
 
 
 <div class="methods-inherited">
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
   
     
 
@@ -280,18 +328,18 @@
     Constructor Detail
   </h2>
   
-    <div class="entry-detail" id="new(maximum)-class-method">
+    <div class="entry-detail" id="new(maximum=4096)-class-method">
       <div class="signature">
         
-        def self.<strong>new</strong>(maximum)
+        def self.<strong>new</strong>(maximum = <span class="n">4096</span>)
 
-        <a class="method-permalink" href="#new%28maximum%29-class-method">#</a>
+        <a class="method-permalink" href="#new%28maximum%3D4096%29-class-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L6" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/dynamic_table.cr#L13" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -310,38 +358,6 @@
     Instance Method Detail
   </h2>
   
-    <div class="entry-detail" id="[](index)-instance-method">
-      <div class="signature">
-        
-        def <strong>[]</strong>(index)
-
-        <a class="method-permalink" href="#%5B%5D%28index%29-instance-method">#</a>
-      </div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L18" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
-    <div class="entry-detail" id="[]?(index)-instance-method">
-      <div class="signature">
-        
-        def <strong>[]?</strong>(index)
-
-        <a class="method-permalink" href="#%5B%5D%3F%28index%29-instance-method">#</a>
-      </div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L22" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
     <div class="entry-detail" id="add(name,value)-instance-method">
       <div class="signature">
         
@@ -353,7 +369,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L11" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/dynamic_table.cr#L17" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -369,55 +385,32 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L3" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/dynamic_table.cr#L10" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="each(&amp;)-instance-method">
+    <div class="entry-detail" id="clear-instance-method">
       <div class="signature">
         
-        def <strong>each</strong>(&)
+        def <strong>clear</strong>
 
-        <a class="method-permalink" href="#each%28%26%29-instance-method">#</a>
+        <a class="method-permalink" href="#clear-instance-method">#</a>
       </div>
+      
+        <div class="doc">
+          
+            <div class="doc-inherited">
+              Description copied from class Deque({String, String})
+            </div>
+          
+          <p>Removes all elements from <code>self</code>.</p>
+        </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L26" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
-    <div class="entry-detail" id="each_with_index(&amp;)-instance-method">
-      <div class="signature">
-        
-        def <strong>each_with_index</strong>(&)
-
-        <a class="method-permalink" href="#each_with_index%28%26%29-instance-method">#</a>
-      </div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L30" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
-    <div class="entry-detail" id="empty?-instance-method">
-      <div class="signature">
-        
-        def <strong>empty?</strong>
-
-        <a class="method-permalink" href="#empty%3F-instance-method">#</a>
-      </div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L38" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/dynamic_table.cr#L24" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -433,7 +426,23 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L4" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/dynamic_table.cr#L11" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="maximum=(maximum:Int32)-instance-method">
+      <div class="signature">
+        
+        def <strong>maximum=</strong>(maximum : Int32)
+
+        <a class="method-permalink" href="#maximum%3D%28maximum%3AInt32%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/dynamic_table.cr#L11" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -449,23 +458,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L42" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
-    <div class="entry-detail" id="size-instance-method">
-      <div class="signature">
-        
-        def <strong>size</strong>
-
-        <a class="method-permalink" href="#size-instance-method">#</a>
-      </div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/dynamic_table.cr#L34" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/dynamic_table.cr#L29" target="_blank">View source</a>]
         
       </div>
     </div>

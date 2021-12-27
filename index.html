@@ -121,7 +121,7 @@
 <a href="https://github.com/wyhaines/hpack.cr/releases"><img src="https://img.shields.io/github/release/wyhaines/hpack.cr.svg?style=for-the-badge" alt="GitHub release" /></a>
 <img src="https://img.shields.io/github/commits-since/wyhaines/hpack.cr/latest?style=for-the-badge" alt="GitHub commits since latest release (by SemVer)" /></p>
 <p>This shard provides a standalone, pure Crystal <a href="https://httpwg.org/specs/rfc7541.html">HPack</a> implementation. HPack is a Huffman-based header compression format that is used with HTTP/2.</p>
-<p>This implementation is based on <a href="https://github.com/ysbaddaden">@ysbaddaden</a>'s implementation that is bundled inside of his <a href="https://github.com/ysbaddaden/http2">http2</a> server &amp; client shard, with some modest refactoring and improvements, packaged and maintained for current Crystal versions.</p>
+<p>This implementation is based on <a href="https://github.com/ysbaddaden">@ysbaddaden</a>'s implementation that is bundled inside of his <a href="https://github.com/ysbaddaden/http2">http2</a> server &amp; client shard, with some modest refactoring and significant improvements, packaged and maintained for current Crystal versions.</p>
 <h2><a id="installation" class="anchor" href="#installation">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -144,7 +144,7 @@
   </svg>
 </a>Usage</h2>
 <pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hpack&quot;</span></code></pre>
-<p>There are two main classes provided by this shard, <code><a href="HPack/Encoder.html">HPack::Encoder</a></code> and <code><a href="HPack/Decoder.html">HPack::Decoder</a></code>. Thd default Encoder will be created with Indexing set to (<code>NONE</code>)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.</p>
+<p>There are two main classes provided by this shard, <code><a href="HPack/Encoder.html">HPack::Encoder</a></code> and <code><a href="HPack/Decoder.html">HPack::Decoder</a></code>. The default Encoder will be created with Indexing set to (<code>NONE</code>)[https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing], huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.</p>
 <pre><code class="language-crystal"><span class="c"># To create a default Encoder:</span>
 encoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Encoder</span>.<span class="k">new</span>
 

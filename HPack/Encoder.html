@@ -125,6 +125,29 @@
 
 
 
+  <h2>
+    <a id="overview" class="anchor" href="#overview">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Overview
+  </h2>
+
+  <h1><a id="to-encode-headers" class="anchor" href="#to-encode-headers">  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>To encode headers:</h1>
+<p>encoder.encode(
+HTTP::Headers {
+&quot;:status&quot;       =&gt; &quot;302&quot;,
+&quot;cache-control&quot; =&gt; &quot;private&quot;,
+&quot;date&quot;          =&gt; &quot;Mon, 21 Oct 2013 20:13:21 GMT&quot;,
+&quot;location&quot;      =&gt; &quot;https://www.example.com&quot;
+}
+)</p>
+<pre><code class="language-crystal"></code></pre>
+
 
 
 
@@ -148,7 +171,7 @@
   </h2>
   
     
-      <a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L7" target="_blank">
+      <a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L33" target="_blank">
         encoder.cr
       </a>
     
@@ -211,7 +234,7 @@
       </li>
     
       <li class="entry-summary">
-        <a href="#encode%28headers%3AHTTP%3A%3AHeaders%2Cindexing%3Ddefault_indexing%2Chuffman%3Ddefault_huffman%2Cwriter%3DIO%3A%3AMemory.new%29-instance-method" class="signature"><strong>#encode</strong>(headers : HTTP::Headers, indexing = default_indexing, huffman = default_huffman, writer = <span class="t">IO</span><span class="t">::</span><span class="t">Memory</span>.<span class="k">new</span>)</a>
+        <a href="#encode%28headers%3AHTTP%3A%3AHeaders%2Cindexing%3Ddefault_indexing%2Chuffman%3Ddefault_huffman%2C_writer%3AIO%3A%3AMemory%3F%3Dnil%29-instance-method" class="signature"><strong>#encode</strong>(headers : HTTP::Headers, indexing = default_indexing, huffman = default_huffman, _writer : IO::Memory? = <span class="n">nil</span>)</a>
         
       </li>
     
@@ -286,7 +309,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L16" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L46" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -316,7 +339,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L14" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L41" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -332,7 +355,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L14" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L41" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -348,7 +371,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L13" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L40" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -364,23 +387,23 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L13" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L40" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="encode(headers:HTTP::Headers,indexing=default_indexing,huffman=default_huffman,writer=IO::Memory.new)-instance-method">
+    <div class="entry-detail" id="encode(headers:HTTP::Headers,indexing=default_indexing,huffman=default_huffman,_writer:IO::Memory?=nil)-instance-method">
       <div class="signature">
         
-        def <strong>encode</strong>(headers : HTTP::Headers, indexing = default_indexing, huffman = default_huffman, writer = <span class="t">IO</span><span class="t">::</span><span class="t">Memory</span>.<span class="k">new</span>)
+        def <strong>encode</strong>(headers : HTTP::Headers, indexing = default_indexing, huffman = default_huffman, _writer : IO::Memory? = <span class="n">nil</span>)
 
-        <a class="method-permalink" href="#encode%28headers%3AHTTP%3A%3AHeaders%2Cindexing%3Ddefault_indexing%2Chuffman%3Ddefault_huffman%2Cwriter%3DIO%3A%3AMemory.new%29-instance-method">#</a>
+        <a class="method-permalink" href="#encode%28headers%3AHTTP%3A%3AHeaders%2Cindexing%3Ddefault_indexing%2Chuffman%3Ddefault_huffman%2C_writer%3AIO%3A%3AMemory%3F%3Dnil%29-instance-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L22" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L53" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -396,7 +419,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L33" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L85" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -412,7 +435,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/e713e162957065c0acf6b291844b56adf2f0e287/src/encoder.cr#L12" target="_blank">View source</a>]
+          [<a href="https://github.com/wyhaines/hpack.cr/blob/18d39c4ccb2fcbe18086f4c4b8275beab8bc5b7d/src/encoder.cr#L39" target="_blank">View source</a>]
         
       </div>
     </div>
