@@ -65,12 +65,18 @@ module HPack
       # use a cached { name => { value => index } } struct (?)
       idx = nil
 
-      STATIC_TABLE.each_with_index do |header, index|
-        if header[0] == name
-          if header[1] == value
-            return {index + 1, value}
-          else
-            idx ||= index + 1
+      if STATIC_TABLE_LOOKUP.has_key?({name, value})
+        return {STATIC_TABLE_LOOKUP[{name, value}] + 1, value}
+      elsif STATIC_TABLE_LOOKUP.has_key?({name, ""})
+        idx = STATIC_TABLE_LOOKUP[{name, ""}] + 1
+      else
+        STATIC_TABLE.each_with_index do |header, index|
+          if header[0] == name
+            if header[1] == value
+              return {index + 1, value}
+            else
+              idx ||= index + 1
+            end
           end
         end
       end
