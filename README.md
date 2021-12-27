@@ -78,5 +78,5 @@ headers = decoder.decode(bytes, HTTP::Headers.new)
 
 - [Kirk Haines](https://github.com/wyhaines) - creator and maintainer
 
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/wyhaines/hack.cr?style=for-the-badge)
-![GitHub issues](https://img.shields.io/github/issues/wyhaines/hack.cr?style=for-the-badge)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/wyhaines/hpack.cr?style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues/wyhaines/hpack.cr?style=for-the-badge)
