@@ -9,7 +9,7 @@ require "./huffman"
 module HPack
   # The default Encoder will be created with Indexing set to [`NONE`](https://httpwg.org/specs/rfc7541.html#literal.header.without.indexing), huffman encoding false, and the max table size set to 4k (4096 bytes). These parameters can all be set in the constructor.
   #
-  # ```crystal
+  # ```
   # # To create a default Encoder:
   # encoder = HPack::Encoder.new
   #
@@ -22,11 +22,11 @@ module HPack
   #
   # # To encode headers:
   # encoder.encode(
-  #   HTTP::Headers {
+  #   HTTP::Headers{
   #     ":status"       => "302",
   #     "cache-control" => "private",
   #     "date"          => "Mon, 21 Oct 2013 20:13:21 GMT",
-  #     "location"      => "https://www.example.com"
+  #     "location"      => "https://www.example.com",
   #   }
   # )
   # ```
@@ -40,7 +40,7 @@ module HPack
     property default_indexing : Indexing
     property default_huffman : Bool
     {% if flag?(:preview_mt) %}
-    @mutex = Mutex.new
+      @mutex = Mutex.new
     {% end %}
 
     def initialize(indexing = Indexing::NONE, huffman = false, max_table_size = 4096)

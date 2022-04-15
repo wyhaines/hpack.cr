@@ -1,5 +1,4 @@
 module HPack
-
   # The DynamicTable is a table of header names and values. It is implemented as a
   # subclass of a Deque in order to get access to all of the iteration and interrogation
   # methods without having to write methods which explicitly wrap them. Fewer lines to

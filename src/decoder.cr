@@ -4,7 +4,7 @@ require "./error"
 module HPack
   # To decode headers, used a `HPack::Decoder` instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.
   #
-  # ```crystal
+  # ```
   # # To create a default Decoder:
   # decoder = HPack::Decoder.new
   #
@@ -99,8 +99,6 @@ module HPack
       if header = table[index - STATIC_TABLE_SIZE - 1]?
         return header
       end
-
-      pp index: index, static_size: STATIC_TABLE_SIZE, dynamic_size: table.size
 
       raise Error.new("invalid index: #{index}")
     end

@@ -15,7 +15,7 @@ describe HPack::Encoder do
 
     encoder.table.size.should eq 1
     encoder.table.bytesize.should eq 55
-    encoder.table[0].should eq ({"custom-key", "custom-header"})
+    encoder.table[0].should eq({"custom-key", "custom-header"})
   end
 
   it "can work with literal headers with Indexing::NONE" do
