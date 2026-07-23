@@ -30,23 +30,92 @@ There are two main classes provided by this shard, `HPack::Encoder` and `HPack::
 
 ```crystal
 # To create a default Encoder:
+default_encoder = HPack::Encoder.new
+
+# To create an encoder with indexing set to Always and Huffman encoding set to true:
+indexed_encoder = HPack::Encoder.new(
+  indexing: HPack::Indexing::ALWAYS,
+  huffman: true
+)
+positional_encoder = HPack::Encoder.new(HPack::Indexing::ALWAYS, true)
+
+# To create an encoder with the max table size set to 8 KiB (8192 bytes):
+large_table_encoder = HPack::Encoder.new(HPack::Indexing::ALWAYS, true, 8192)
+
+# To encode headers into an owned Bytes value:
 encoder = HPack::Encoder.new
+headers = HTTP::Headers{
+  ":status"       => "302",
+  "cache-control" => "private",
+  "date"          => "Mon, 21 Oct 2013 20:13:21 GMT",
+  "location"      => "https://www.example.com",
+}
+bytes = encoder.encode(headers)
 
-# To create an encoder with indexing set to Always and Huffamn encoding set to true:
-encoder = HPack::Encoder.new(indexing: HPack::Indexing::ALWAYS, huffman: true)
-encoder = HPack::Encoder.new(HPack::Indexing::ALWAYS, true)
+# To append an encoded block to a caller-owned buffer:
+output = IO::Memory.new
+encoder.encode_into(headers, output)
 
-# To create an encoder with the max table size set to 8k (8096 bytes):
-encoder = HPack::Encoder.new(HPack::Indexing::ALWAYS, true, 8096)
+# To avoid HTTP::Headers adapter allocations, pass ordered name/value fields.
+# Pseudo-headers must precede regular fields in this form.
+fields = [
+  {":status", "302"},
+  {"cache-control", "private"},
+]
+bytes = encoder.encode(fields)
+```
 
-# To encode headers:
-encoder.encode(
-  HTTP::Headers {
-    ":status"       => "302",
-    "cache-control" => "private",
-    "date"          => "Mon, 21 Oct 2013 20:13:21 GMT",
-    "location"      => "https://www.example.com"
-  }
+Use `HPack::HeaderField` when fields need different indexing or Huffman
+behavior. Explicit field options override a policy block, which overrides the
+per-call arguments and encoder defaults. `SMALLER` encodes each emitted name
+and value with Huffman only when the result is strictly shorter:
+
+```crystal
+fields = [
+  HPack::HeaderField.new(
+    ":method",
+    "GET",
+    indexing: HPack::Indexing::INDEXED
+  ),
+  HPack::HeaderField.new(
+    "authorization",
+    "secret",
+    indexing: HPack::Indexing::NEVER
+  ),
+  HPack::HeaderField.new("cache-control", "private"),
+]
+bytes = encoder.encode(fields, huffman: HPack::HuffmanMode::SMALLER)
+
+# Policies receive normalized fields once, in final wire order.
+bytes = encoder.encode(headers, huffman: HPack::HuffmanMode::SMALLER) do |name, _value|
+  if name == "authorization"
+    HPack::FieldOptions.new(indexing: HPack::Indexing::NEVER)
+  end
+end
+```
+
+To forward decoded fields without losing a never-indexed marker, retain the
+decoder metadata and pass those fields directly to the outbound compression
+context. Each HTTP/2 direction or connection must retain its own encoder and
+decoder table:
+
+```crystal
+inbound_encoder = HPack::Encoder.new
+inbound_decoder = HPack::Decoder.new
+inbound_bytes = inbound_encoder.encode([
+  HPack::HeaderField.new(":method", "GET"),
+  HPack::HeaderField.new(
+    "authorization",
+    "secret",
+    indexing: HPack::Indexing::NEVER
+  ),
+])
+decoded = inbound_decoder.decode_with_metadata(inbound_bytes)
+
+outbound_encoder = HPack::Encoder.new
+forwarded = outbound_encoder.encode(
+  decoded[:fields],
+  huffman: HPack::HuffmanMode::SMALLER
 )
 ```
 
@@ -65,6 +134,28 @@ headers = decoder.decode(bytes)
 # To decode headers into an existing `HTTP::Headers` instance:
 headers = decoder.decode(bytes, HTTP::Headers.new)
 ```
+
+## Benchmarks
+
+The benchmark entry point validates its fixtures before timing separate
+Huffman, encoder, decoder, lookup, and policy reports. The default release-mode
+suite is intended for routine local comparisons:
+
+```sh
+crystal run -p -s -t --release benchmark.cr
+```
+
+Use the extended mode for larger inputs, deeper tables, and eviction-heavy
+sequences. Compile with `preview_mt` to include concurrent Huffman decoding:
+
+```sh
+HPACK_BENCH_EXTENDED=1 crystal run -p -s -t --release benchmark.cr
+HPACK_BENCH_EXTENDED=1 crystal run -Dpreview_mt -p -s -t --release benchmark.cr
+```
+
+Results include throughput, time per operation, and allocated bytes per
+operation. Compare runs built with the same Crystal version and machine; see
+[the recorded baseline](benchmarks/BASELINE.md) for the current reference.
 
 ## Contributing
 

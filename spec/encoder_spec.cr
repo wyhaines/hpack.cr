@@ -1,4 +1,5 @@
 require "./spec_helper"
+require "io/multi_writer"
 
 describe HPack::Encoder do
   encoder = uninitialized HPack::Encoder
@@ -33,10 +34,166 @@ describe HPack::Encoder do
     encoder.table.size.should eq 0
   end
 
+  it "uses an indexed static name with Indexing::NEVER" do
+    headers = HTTP::Headers{"authorization" => "secret"}
+    encoder.encode(headers, HPack::Indexing::NEVER).should eq UInt8.static_array(
+      0x1f, 0x08, 0x06, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74,
+    ).to_slice
+    encoder.table.size.should eq 0
+  end
+
+  it "encodes exact static matches as literals with Indexing::NEVER" do
+    headers = HTTP::Headers{":method" => "GET"}
+    encoder.encode(headers, HPack::Indexing::NEVER).should eq UInt8.static_array(
+      0x12, 0x03, 0x47, 0x45, 0x54,
+    ).to_slice
+    encoder.table.size.should eq 0
+  end
+
+  it "encodes exact dynamic matches as literals with Indexing::NEVER" do
+    headers = HTTP::Headers{"x-secret" => "secret"}
+    encoder.encode(headers, HPack::Indexing::ALWAYS)
+
+    encoder.encode(headers, HPack::Indexing::NEVER).should eq UInt8.static_array(
+      0x1f, 0x2f, 0x06, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74,
+    ).to_slice
+    encoder.table.size.should eq 1
+    encoder.table[0].should eq({"x-secret", "secret"})
+  end
+
   it "sets a GET method header value correctly" do
     encoder.encode(HTTP::Headers{":method" => "GET"}).should eq UInt8.static_array(0x82).to_slice
 
     encoder.table.size.should eq 0
+  end
+
+  it "returns bytes that remain stable across later encodes" do
+    first = encoder.encode(HTTP::Headers{"x" => "a"})
+
+    encoder.encode(HTTP::Headers{"y" => "b"})
+
+    first.should eq UInt8.static_array(0x00, 0x01, 0x78, 0x01, 0x61).to_slice
+  end
+
+  it "orders HTTP pseudo-headers first while preserving multiple value order" do
+    headers = HTTP::Headers.new
+    headers.add("x-order", "first")
+    headers.add(":path", "/ordered")
+    headers.add("x-order", "second")
+    headers.add(":method", "GET")
+
+    fields = [
+      {":path", "/ordered"},
+      {":method", "GET"},
+      {"x-order", "first"},
+      {"x-order", "second"},
+    ]
+
+    encoded_headers = encoder.encode(headers)
+    encoded_fields = HPack::Encoder.new.encode(fields)
+
+    encoded_headers.should eq encoded_fields
+    decoded = HPack::Decoder.new.decode_with_metadata(encoded_headers)
+    decoded[:fields].map { |field| {field.name, field.value} }.should eq fields
+  end
+
+  it "normalizes ordered and HTTP header names compatibly" do
+    {
+      "x-lower"  => "x-lower",
+      "X-UPPER"  => "x-upper",
+      "x-MiXeD"  => "x-mixed",
+      ""         => "",
+      "Ä-Header" => "ä-header",
+    }.each do |input, normalized|
+      fields = [{input, "value"}]
+      expected = HPack::Encoder.new.encode([{normalized, "value"}])
+
+      HPack::Encoder.new.encode(fields).should eq expected
+      HPack::Encoder.new.encode(HTTP::Headers{input => "value"}).should eq expected
+    end
+  end
+
+  it "appends repeated header and field blocks with encode_into" do
+    output = IO::Memory.new
+    output.write_byte(0xaa)
+
+    encoder.encode_into(HTTP::Headers{"x" => "a"}, output).should be_nil
+    encoder.encode_into([{"y", "b"}, {"y", "c"}], output).should be_nil
+
+    output.to_slice.should eq UInt8.static_array(
+      0xaa,
+      0x00, 0x01, 0x78, 0x01, 0x61,
+      0x00, 0x01, 0x79, 0x01, 0x62,
+      0x00, 0x01, 0x79, 0x01, 0x63,
+    ).to_slice
+  end
+
+  it "can encode into an arbitrary IO" do
+    sink = IO::Memory.new
+    output = IO::MultiWriter.new(sink)
+
+    encoder.encode_into([{"x", "a"}].each, output)
+
+    sink.to_slice.should eq UInt8.static_array(
+      0x00, 0x01, 0x78, 0x01, 0x61,
+    ).to_slice
+  end
+
+  it "produces equivalent owned, caller-buffer, and ordered-field output" do
+    headers = HTTP::Headers{
+      "x-order" => ["first", "second"],
+      ":path"   => "/ordered",
+    }
+    fields = [
+      {":path", "/ordered"},
+      {"x-order", "first"},
+      {"x-order", "second"},
+    ]
+    expected = HPack::Encoder.new.encode(headers)
+    output = IO::Memory.new
+
+    HPack::Encoder.new.encode(fields).should eq expected
+    HPack::Encoder.new.encode_into(fields, output)
+    output.to_slice.should eq expected
+  end
+
+  it "keeps the legacy external writer path append-only" do
+    output = IO::Memory.new
+    output.write_byte(0xaa)
+
+    bytes = encoder.encode(HTTP::Headers{"x" => "a"}, _writer: output)
+
+    bytes.should eq UInt8.static_array(
+      0xaa, 0x00, 0x01, 0x78, 0x01, 0x61,
+    ).to_slice
+  end
+
+  it "restores its internal writer after an external writer raises" do
+    external_writer = IO::Memory.new
+    external_writer.close
+
+    expect_raises(IO::Error, "Closed stream") do
+      encoder.encode(HTTP::Headers{"x" => "a"}, _writer: external_writer)
+    end
+
+    encoder.encode(HTTP::Headers{"y" => "b"}).should eq UInt8.static_array(
+      0x00, 0x01, 0x79, 0x01, 0x62,
+    ).to_slice
+  end
+
+  it "clears adapter scratch state and restores its writer when encode_into raises" do
+    external_writer = IO::Memory.new
+    external_writer.close
+
+    expect_raises(IO::Error, "Closed stream") do
+      encoder.encode_into(HTTP::Headers{"stale" => "value"}, external_writer)
+    end
+
+    output = IO::Memory.new
+    encoder.encode_into(HTTP::Headers{"y" => "b"}, output)
+    output.to_slice.should eq UInt8.static_array(
+      0x00, 0x01, 0x79, 0x01, 0x62,
+    ).to_slice
   end
 
   it "works with a large integer literal" do

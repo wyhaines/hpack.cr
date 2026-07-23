@@ -42,10 +42,62 @@ describe HPack::Decoder do
     decoder.table.size.should eq 0
   end
 
+  it "retains never-indexed metadata for intermediaries" do
+    decoded = decoder.decode_with_metadata(
+      UInt8.static_array(
+        0x82, 0x1f, 0x08, 0x06, 0x73, 0x65, 0x63, 0x72,
+        0x65, 0x74).to_slice)
+
+    HTTP::Headers{
+      ":method"       => "GET",
+      "authorization" => "secret",
+    }.should eq decoded[:headers]
+    [
+      HPack::DecodedHeader.new(":method", "GET", HPack::Indexing::INDEXED),
+      HPack::DecodedHeader.new("authorization", "secret", HPack::Indexing::NEVER),
+    ].should eq decoded[:fields]
+    decoder.table.size.should eq 0
+  end
+
   # # http://tools.ietf.org/html/rfc7541#appendix-C.2.4
   it "works with an indexed header field" do
     HTTP::Headers{":method" => "GET"}.should eq decoder.decode(UInt8.static_array(0x82).to_slice)
     decoder.table.size.should eq 0
+  end
+
+  it "decodes the final static table entry" do
+    headers = decoder.decode(UInt8.static_array(0xbd).to_slice)
+
+    HTTP::Headers{"www-authenticate" => ""}.should eq headers
+
+    decoder.decode(UInt8.static_array(0x40, 0x01, 0x78, 0x01, 0x79).to_slice)
+    headers = decoder.decode(UInt8.static_array(0xbd).to_slice)
+
+    HTTP::Headers{"www-authenticate" => ""}.should eq headers
+    decoder.table.size.should eq 1
+  end
+
+  it "accepts a dynamic table size update at the start of a header block" do
+    headers = decoder.decode(UInt8.static_array(0x20, 0x82).to_slice)
+
+    HTTP::Headers{":method" => "GET"}.should eq headers
+    decoder.table.maximum.should eq 0
+  end
+
+  it "rejects a dynamic table size update after a literal header" do
+    bytes = UInt8.static_array(0x00, 0x01, 0x78, 0x01, 0x79, 0x20).to_slice
+
+    expect_raises(HPack::Error, "unexpected dynamic table size update") do
+      decoder.decode(bytes)
+    end
+  end
+
+  it "rejects a dynamic table size update after a dynamic header" do
+    decoder.decode(UInt8.static_array(0x40, 0x01, 0x78, 0x01, 0x79).to_slice)
+
+    expect_raises(HPack::Error, "unexpected dynamic table size update") do
+      decoder.decode(UInt8.static_array(0xbe, 0x20).to_slice)
+    end
   end
 
   # # http://tools.ietf.org/html/rfc7541#appendix-C.3
@@ -189,6 +241,23 @@ describe HPack::Decoder do
     ("." * 127).should eq headers["x"]
   end
 
+  it "reports oversized integers as decoding errors" do
+    bytes = UInt8.static_array(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00).to_slice
+
+    expect_raises(HPack::Error, "integer exceeds implementation limit") do
+      decoder.decode(bytes)
+    end
+  end
+
+  it "accepts the largest supported integer" do
+    decoder = HPack::Decoder.new(Int32::MAX)
+    bytes = UInt8.static_array(0x3f, 0xe0, 0xff, 0xff, 0xff, 0x07).to_slice
+
+    decoder.decode(bytes)
+
+    decoder.table.maximum.should eq Int32::MAX
+  end
+
   # # https://tools.ietf.org/html/rfc7541#section-5.2
   it "should reject padding larger than 7 bits" do
     bytes = UInt8.static_array(
@@ -207,5 +276,17 @@ describe HPack::Decoder do
       0x85, 0xf2, 0xb2, 0x4a, 0x84, 0xff, 0x83, 0x49,
       0x50, 0x90).to_slice
     expect_raises(Exception) { decoder.decode(bytes) }
+  end
+
+  it "clears Huffman scratch output before and after decoding errors" do
+    headers = decoder.decode(UInt8.static_array(0x01, 0x82, 0xfe, 0x3f).to_slice)
+    headers[":authority"].should eq "!"
+
+    expect_raises(HPack::Error) do
+      decoder.decode(UInt8.static_array(0x01, 0x81, 0xff).to_slice)
+    end
+
+    headers = decoder.decode(UInt8.static_array(0x01, 0x81, 0x1f).to_slice)
+    headers[":authority"].should eq "a"
   end
 end

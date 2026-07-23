@@ -1,5 +1,7 @@
 require "./slice_reader"
 require "./error"
+require "./indexing"
+require "./header_field"
 
 module HPack
   # To decode headers, used a `HPack::Decoder` instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.
@@ -24,33 +26,53 @@ module HPack
 
     def initialize(@max_table_size = 4096)
       @table = DynamicTable.new(@max_table_size)
+      @huffman_output = IO::Memory.new
     end
 
     def decode(bytes, headers = HTTP::Headers.new)
+      decode_into(bytes, headers, nil)
+    end
+
+    # Decodes headers and retains their ordered indexing representations.
+    #
+    # The returned `headers` value is the same value returned by `#decode`.
+    # `fields` retains one entry per decoded field, including `Indexing::NEVER`
+    # markers that intermediaries need when forwarding fields.
+    def decode_with_metadata(bytes, headers = HTTP::Headers.new)
+      fields = [] of DecodedHeader
+      decode_into(bytes, headers, fields)
+      {headers: headers, fields: fields}
+    end
+
+    private def decode_into(bytes, headers, fields : Array(DecodedHeader)?)
       @reader = SliceReader.new(bytes)
-      decoded_common_headers = false
+      decoded_header = false
 
       until reader.done?
         if reader.current_byte.bit(7) == 1 # 1.......  indexed
-          index, name, value = literal_indexed
+          _index, name, value = literal_indexed
+          indexing = Indexing::INDEXED
         elsif reader.current_byte.bit(6) == 1 # 01......  literal with incremental indexing
-          index, name, value = literal_with_incremental_indexing
+          _index, name, value = literal_with_incremental_indexing
+          indexing = Indexing::ALWAYS
         elsif reader.current_byte.bit(5) == 1 # 001.....  table max size update
-          raise Error.new("unexpected dynamic table size update") if decoded_common_headers
+          raise Error.new("unexpected dynamic table size update") if decoded_header
           if (new_size = integer(5)) > max_table_size
             raise Error.new("dynamic table size update is larger than SETTINGS_HEADER_TABLE_SIZE(#{max_table_size}")
           end
           table.resize(new_size)
           next
         elsif reader.current_byte.bit(4) == 1 # 0001....  literal never indexed
-          index, name, value = literal_never_indexed
-          # Future improvement: retain the never_indexed property.
+          _index, name, value = literal_never_indexed
+          indexing = Indexing::NEVER
         else # 0000....  literal without indexing
-          index, name, value = literal_without_indexing
+          _index, name, value = literal_without_indexing
+          indexing = Indexing::NONE
         end
 
-        decoded_common_headers = 0 < index < STATIC_TABLE_SIZE
+        decoded_header = true
         headers.add(name, value)
+        fields << DecodedHeader.new(name, value, indexing) if fields
       end
 
       headers
@@ -92,7 +114,7 @@ module HPack
     end
 
     def indexed(index)
-      if 0 < index < STATIC_TABLE_SIZE
+      if 0 < index <= STATIC_TABLE_SIZE
         return STATIC_TABLE[index - 1]
       end
 
@@ -104,20 +126,35 @@ module HPack
     end
 
     def integer(n)
-      integer = (reader.read_byte & (0xff >> (8 - n))).to_i
-      n2 = 2 ** n - 1
-      return integer if integer < n2
+      integer = (reader.read_byte & (0xff >> (8 - n))).to_i64
+      prefix_maximum = (2_i64 ** n) - 1
+      return integer.to_i32 if integer < prefix_maximum
 
-      m = 0
+      maximum = Int32::MAX.to_i64
+      multiplier = 1_i64
+      beyond_limit = false
       loop do
-        # Future improvement: raise if integer grows over the limit.
         byte = reader.read_byte
-        integer += (byte & 127).to_i * (2 ** (m * 7))
+        digit = (byte & 127).to_i64
+        if beyond_limit
+          raise Error.new("integer exceeds implementation limit") unless digit == 0
+        else
+          increment = digit * multiplier
+          if increment > maximum - integer
+            raise Error.new("integer exceeds implementation limit")
+          end
+          integer += increment
+        end
         break unless byte & 128 == 128
-        m += 1
+
+        if multiplier > maximum // 128
+          beyond_limit = true
+        else
+          multiplier *= 128
+        end
       end
 
-      integer
+      integer.to_i32
     end
 
     def string
@@ -126,7 +163,9 @@ module HPack
       bytes = reader.read(length)
 
       if huffman
-        HPack.huffman.decode(bytes)
+        @huffman_output.clear
+        HPack.huffman.decode(bytes, @huffman_output)
+        @huffman_output.to_s
       else
         String.new(bytes)
       end

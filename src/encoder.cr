@@ -1,4 +1,5 @@
 require "./indexing"
+require "./header_field"
 require "./dynamic_table"
 require "./static_table"
 require "./huffman"
@@ -13,12 +14,12 @@ module HPack
   # # To create a default Encoder:
   # encoder = HPack::Encoder.new
   #
-  # # To create an encoder with indexing set to Always and Huffamn encoding set to true:
+  # # To create an encoder with indexing set to Always and Huffman encoding set to true:
   # encoder = HPack::Encoder.new(indexing: HPack::Indexing::ALWAYS, huffman: true)
   # encoder = HPack::Encoder.new(HPack::Indexing::ALWAYS, true)
   #
-  # # To create an encoder with the max table size set to 8k (8096 bytes):
-  # encoder = HPack::Encoder.new(HPack::Indexing::ALWAYS, true, 8096)
+  # # To create an encoder with the max table size set to 8 KiB (8192 bytes):
+  # encoder = HPack::Encoder.new(HPack::Indexing::ALWAYS, true, 8192)
   #
   # # To encode headers:
   # encoder.encode(
@@ -31,11 +32,14 @@ module HPack
   # )
   # ```
   struct Encoder
-    # Future improvement: allow per-header indexing configuration.
-    # Future improvement: allow per-header Huffman encoding configuration.
-
-    private getter writer : IO::Memory = IO::Memory.new
-    @saved_writer : IO::Memory
+    private getter writer : IO
+    @buffer : IO::Memory
+    @pseudo_headers : Array(Tuple(String, Array(String)))
+    @regular_headers : Array(Tuple(String, Array(String)))
+    @table_snapshot : Array(Tuple(String, String))?
+    @table_snapshot_maximum : Int32
+    @table_transaction_active : Bool
+    @table_snapshot_captured : Bool
     getter table : DynamicTable
     property default_indexing : Indexing
     # Retain the established getter name for API compatibility.
@@ -45,246 +49,719 @@ module HPack
     {% end %}
 
     def initialize(indexing = Indexing::NONE, huffman = false, max_table_size = 4096)
-      @saved_writer = @writer
+      @buffer = IO::Memory.new
+      @writer = @buffer
+      @pseudo_headers = [] of Tuple(String, Array(String))
+      @regular_headers = [] of Tuple(String, Array(String))
+      @table_snapshot = nil
+      @table_snapshot_maximum = max_table_size
+      @table_transaction_active = false
+      @table_snapshot_captured = false
       @default_indexing = indexing
       @default_huffman = huffman
       @table = DynamicTable.new(max_table_size)
     end
 
+    # Encodes *headers* and returns an owned byte slice.
+    #
+    # Pseudo-headers are emitted before regular headers regardless of their
+    # insertion order. The returned bytes remain valid after later calls.
+    #
+    # The `_writer` argument is retained for compatibility. New code that owns
+    # its output buffer should use `#encode_into`.
     def encode(
       headers : HTTP::Headers,
       indexing = default_indexing,
       huffman = default_huffman,
       _writer : IO::Memory? = nil,
-    )
+    ) : Bytes
+      if output = _writer
+        encode_into(headers, output, indexing, huffman)
+        return output.to_slice
+      end
+
       {% begin %}
       {% if flag?(:preview_mt) %}
       @mutex.synchronize do
       {% end %}
-      # If a pre-existing writer is provided, use it.
-      if _writer
-        @writer = _writer
-      else
-        @writer.clear
+      @buffer.clear
+      with_writer(@buffer, indexing == Indexing::ALWAYS) do
+        encode_headers(headers, indexing, huffman, false) { nil }
       end
-      headers.each { |name, values| encode(name.downcase, values, indexing, huffman) if name.starts_with?(':') }
-      headers.each { |name, values| encode(name.downcase, values, indexing, huffman) unless name.starts_with?(':') }
-
-      # Restore the pre-existing writer.
-      if _writer
-        @writer = @saved_writer
-        _writer.to_slice
-      else
-        @writer.to_slice
-      end
+      @buffer.to_slice.dup
       {% if flag?(:preview_mt) %}
       end
       {% end %}
       {% end %}
     end
 
-    # :nodoc:
-    protected def encode(name, values, indexing, huffman)
-      values.each do |value|
-        if header = indexed(name, value)
-          if header[1]
-            integer(header[0], 7, prefix: Indexing::INDEXED)
-          elsif indexing == Indexing::ALWAYS
-            integer(header[0], 6, prefix: Indexing::ALWAYS)
-            string(value, huffman)
-            table.add(name, value)
-          else
-            integer(header[0], 4, prefix: Indexing::NONE)
-            string(value, huffman)
-          end
-        else
-          case indexing
-          when Indexing::ALWAYS
-            table.add(name, value)
-            writer.write_byte(Indexing::ALWAYS.value)
-          when Indexing::NEVER
-            writer.write_byte(Indexing::NEVER.value)
-          else
-            writer.write_byte(Indexing::NONE.value)
-          end
-          string(name, huffman)
-          string(value, huffman)
+    # Encodes *headers* using a policy evaluated once per field in wire order.
+    #
+    # The block receives the normalized name and value and may return
+    # `FieldOptions` overrides. A `nil` return retains the per-call values.
+    #
+    # ```
+    # encoder.encode(headers, huffman: HPack::HuffmanMode::SMALLER) do |name, _|
+    #   if name == "authorization"
+    #     HPack::FieldOptions.new(indexing: HPack::Indexing::NEVER)
+    #   end
+    # end
+    # ```
+    def encode(
+      headers : HTTP::Headers,
+      indexing : Indexing = default_indexing,
+      huffman : Bool | HuffmanMode = default_huffman,
+      & : String, String -> FieldOptions?
+    ) : Bytes
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      validate_indexing(indexing)
+      @buffer.clear
+      with_writer(@buffer, true) do
+        encode_headers(headers, indexing, huffman, true) do |name, value|
+          yield name, value
+        end
+      end
+      @buffer.to_slice.dup
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+    end
+
+    # Encodes ordered name/value *fields* and returns an owned byte slice.
+    #
+    # Fields are emitted in the supplied order and duplicate names are
+    # preserved. Callers must place every pseudo-header before regular fields.
+    # Use the `HTTP::Headers` overload when the encoder should perform that
+    # reordering.
+    def encode(
+      fields : Enumerable(Tuple(String, String)),
+      indexing = default_indexing,
+      huffman = default_huffman,
+    ) : Bytes
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      @buffer.clear
+      with_writer(@buffer, indexing == Indexing::ALWAYS) do
+        encode_tuple_fields(fields, indexing, huffman, false) { nil }
+      end
+      @buffer.to_slice.dup
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+    end
+
+    # Encodes ordered tuple *fields* using a per-field policy block.
+    #
+    # Fields remain in supplied order. The block receives normalized names and
+    # may return `FieldOptions` overrides.
+    def encode(
+      fields : Enumerable(Tuple(String, String)),
+      indexing : Indexing = default_indexing,
+      huffman : Bool | HuffmanMode = default_huffman,
+      & : String, String -> FieldOptions?
+    ) : Bytes
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      validate_indexing(indexing)
+      @buffer.clear
+      with_writer(@buffer, true) do
+        encode_tuple_fields(fields, indexing, huffman, true) do |name, value|
+          yield name, value
+        end
+      end
+      @buffer.to_slice.dup
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+    end
+
+    # Encodes ordered fields with optional per-field overrides.
+    def encode(
+      fields : Enumerable(HeaderField),
+      indexing : Indexing = default_indexing,
+      huffman : Bool | HuffmanMode = default_huffman,
+    ) : Bytes
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      validate_indexing(indexing)
+      @buffer.clear
+      with_writer(@buffer, true) do
+        encode_header_fields(fields, indexing, huffman) { nil }
+      end
+      @buffer.to_slice.dup
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+    end
+
+    # Encodes ordered fields with explicit options and a policy block.
+    #
+    # Each `HeaderField` option takes precedence over the corresponding
+    # callback option, which takes precedence over the per-call value.
+    def encode(
+      fields : Enumerable(HeaderField),
+      indexing : Indexing = default_indexing,
+      huffman : Bool | HuffmanMode = default_huffman,
+      & : String, String -> FieldOptions?
+    ) : Bytes
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      validate_indexing(indexing)
+      @buffer.clear
+      with_writer(@buffer, true) do
+        encode_header_fields(fields, indexing, huffman) do |name, value|
+          yield name, value
+        end
+      end
+      @buffer.to_slice.dup
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+    end
+
+    # Encodes decoded fields while preserving each field's indexing marker.
+    #
+    # Only Huffman behavior may be overridden; in particular,
+    # `Indexing::NEVER` cannot be downgraded while forwarding.
+    def encode(
+      fields : Enumerable(DecodedHeader),
+      *,
+      huffman : Bool | HuffmanMode = default_huffman,
+    ) : Bytes
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      @buffer.clear
+      with_writer(@buffer, true) do
+        encode_decoded_fields(fields, huffman)
+      end
+      @buffer.to_slice.dup
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+    end
+
+    # Appends one encoded block for *headers* to *output*.
+    #
+    # Existing output is not cleared. Pseudo-headers are emitted before regular
+    # headers regardless of insertion order.
+    def encode_into(
+      headers : HTTP::Headers,
+      output : IO,
+      indexing = default_indexing,
+      huffman = default_huffman,
+    ) : Nil
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      with_writer(output, indexing == Indexing::ALWAYS) do
+        encode_headers(headers, indexing, huffman, false) { nil }
+      end
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+      nil
+    end
+
+    # Appends a policy-driven encoded block for *headers* to *output*.
+    #
+    # Existing output is not cleared. The policy is evaluated once per field
+    # after name normalization and pseudo-header ordering.
+    def encode_into(
+      headers : HTTP::Headers,
+      output : IO,
+      indexing : Indexing = default_indexing,
+      huffman : Bool | HuffmanMode = default_huffman,
+      & : String, String -> FieldOptions?
+    ) : Nil
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      validate_indexing(indexing)
+      with_writer(output, true) do
+        encode_headers(headers, indexing, huffman, true) do |name, value|
+          yield name, value
+        end
+      end
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+      nil
+    end
+
+    # Appends one encoded block for ordered name/value *fields* to *output*.
+    #
+    # Existing output is not cleared, duplicate names are preserved, and fields
+    # are emitted in the supplied order. Callers must place every pseudo-header
+    # before regular fields.
+    def encode_into(
+      fields : Enumerable(Tuple(String, String)),
+      output : IO,
+      indexing = default_indexing,
+      huffman = default_huffman,
+    ) : Nil
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      with_writer(output, indexing == Indexing::ALWAYS) do
+        encode_tuple_fields(fields, indexing, huffman, false) { nil }
+      end
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+      nil
+    end
+
+    # Appends policy-driven ordered tuple *fields* to *output*.
+    def encode_into(
+      fields : Enumerable(Tuple(String, String)),
+      output : IO,
+      indexing : Indexing = default_indexing,
+      huffman : Bool | HuffmanMode = default_huffman,
+      & : String, String -> FieldOptions?
+    ) : Nil
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      validate_indexing(indexing)
+      with_writer(output, true) do
+        encode_tuple_fields(fields, indexing, huffman, true) do |name, value|
+          yield name, value
+        end
+      end
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+      nil
+    end
+
+    # Appends ordered fields with optional per-field overrides to *output*.
+    def encode_into(
+      fields : Enumerable(HeaderField),
+      output : IO,
+      indexing : Indexing = default_indexing,
+      huffman : Bool | HuffmanMode = default_huffman,
+    ) : Nil
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      validate_indexing(indexing)
+      with_writer(output, true) do
+        encode_header_fields(fields, indexing, huffman) { nil }
+      end
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+      nil
+    end
+
+    # Appends ordered fields using explicit options and a policy block.
+    def encode_into(
+      fields : Enumerable(HeaderField),
+      output : IO,
+      indexing : Indexing = default_indexing,
+      huffman : Bool | HuffmanMode = default_huffman,
+      & : String, String -> FieldOptions?
+    ) : Nil
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      validate_indexing(indexing)
+      with_writer(output, true) do
+        encode_header_fields(fields, indexing, huffman) do |name, value|
+          yield name, value
+        end
+      end
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+      nil
+    end
+
+    # Appends decoded fields while preserving every indexing marker.
+    def encode_into(
+      fields : Enumerable(DecodedHeader),
+      output : IO,
+      *,
+      huffman : Bool | HuffmanMode = default_huffman,
+    ) : Nil
+      {% begin %}
+      {% if flag?(:preview_mt) %}
+      @mutex.synchronize do
+      {% end %}
+      with_writer(output, true) do
+        encode_decoded_fields(fields, huffman)
+      end
+      {% if flag?(:preview_mt) %}
+      end
+      {% end %}
+      {% end %}
+      nil
+    end
+
+    private def with_writer(output : IO, transactional : Bool, &)
+      previous_writer = @writer
+      @writer = output
+      if transactional
+        @table_transaction_active = true
+        @table_snapshot_captured = false
+        completed = false
+        begin
+          yield
+          completed = true
+        ensure
+          rollback_table unless completed
+          @table_transaction_active = false
+          @table_snapshot_captured = false
+          @table_snapshot.try(&.clear)
+          @writer = previous_writer
+        end
+      else
+        begin
+          yield
+        ensure
+          @writer = previous_writer
         end
       end
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
-    protected def indexed(name, value)
-      # This is WAY faster than iterating through the lookup table, or using a
-      # hash based lookup table.
-      # It could be optimized more by doing some statistical analysis on real
-      # traffic in order to determine which headers are most common, and putting
-      # them at the top of the case statement.
+    private def add_to_table(name : String, value : String)
+      if @table_transaction_active && !@table_snapshot_captured
+        if table.empty?
+          @table_snapshot.try(&.clear)
+        else
+          snapshot = @table_snapshot ||= [] of Tuple(String, String)
+          snapshot.clear
+          table.each { |header| snapshot << header }
+        end
+        @table_snapshot_maximum = table.maximum
+        @table_snapshot_captured = true
+      end
+      table.add(name, value)
+    end
 
-      # Future improvement: build this case from STATIC_TABLE with a macro
-      # instead of hardcoding it and leaving STATIC_TABLE unreferenced.
-      idx = case name
-            when ":authority"
-              1
-            when ":method"
-              case value
-              when "GET"
-                return {2, "GET"}
-              when "POST"
-                return {3, "POST"}
-              else
-                3
-              end
-            when ":path"
-              case value
-              when "/"
-                return {4, "/"}
-              when "/index.html"
-                return {5, "/index.html"}
-              else
-                4
-              end
-            when ":scheme"
-              case value
-              when "http"
-                return {6, "http"}
-              when "https"
-                return {7, "https"}
-              else
-                6
-              end
-            when ":status"
-              case value
-              when "200"
-                return {8, "200"}
-              when "204"
-                return {9, "204"}
-              when "206"
-                return {10, "206"}
-              when "304"
-                return {11, "304"}
-              when "400"
-                return {12, "400"}
-              when "404"
-                return {13, "404"}
-              when "500"
-                return {14, "500"}
-              else
-                8
-              end
-            when "accept-charset"
-              15
-            when "accept-encoding"
-              case value
-              when "gzip, deflate"
-                return {16, "gzip, deflate"}
-              else
-                16
-              end
-            when "accept-language"
-              17
-            when "accept-ranges"
-              18
-            when "accept"
-              19
-            when "access-control-allow-origin"
-              20
-            when "age"
-              21
-            when "allow"
-              22
-            when "authorization"
-              23
-            when "cache-control"
-              24
-            when "content-disposition"
-              25
-            when "content-encoding"
-              26
-            when "content-language"
-              27
-            when "content-length"
-              28
-            when "content-location"
-              29
-            when "content-range"
-              30
-            when "content-type"
-              31
-            when "cookie"
-              32
-            when "date"
-              33
-            when "etag"
-              34
-            when "expect"
-              35
-            when "expires"
-              36
-            when "from"
-              37
-            when "host"
-              38
-            when "if-match"
-              39
-            when "if-modified-since"
-              40
-            when "if-none-match"
-              41
-            when "if-range"
-              42
-            when "if-unmodified-since"
-              43
-            when "last-modified"
-              44
-            when "link"
-              45
-            when "location"
-              46
-            when "max-forwards"
-              47
-            when "proxy-authenticate"
-              48
-            when "proxy-authorization"
-              49
-            when "range"
-              50
-            when "referer"
-              51
-            when "refresh"
-              52
-            when "retry-after"
-              53
-            when "server"
-              54
-            when "set-cookie"
-              55
-            when "strict-transport-security"
-              56
-            when "transfer-encoding"
-              57
-            when "user-agent"
-              58
-            when "vary"
-              59
-            when "via"
-              60
-            when "www-authenticate"
-              61
-            end
+    private def rollback_table
+      return unless @table_snapshot_captured
 
-      table.each_with_index do |header, index|
-        if header[0] == name
-          if header[1] == value
-            return {index + STATIC_TABLE_SIZE + 1, value}
-            # else
-            #  idx ||= index + 1
+      table.maximum = @table_snapshot_maximum
+      table.clear
+      if snapshot = @table_snapshot
+        snapshot.reverse_each do |name, value|
+          table.add(name, value)
+        end
+      end
+    end
+
+    private def encode_headers(headers : HTTP::Headers, indexing, huffman, validate, &)
+      headers.each do |name, values|
+        partition = name.starts_with?(':') ? @pseudo_headers : @regular_headers
+        partition << {normalize_name(name), values}
+      end
+
+      if validate
+        huffman_mode = huffman_mode(huffman)
+        @pseudo_headers.each do |name, values|
+          values.each do |value|
+            options = yield name, value
+            encode_policy_field(
+              name,
+              value,
+              nil,
+              nil,
+              options,
+              indexing,
+              huffman_mode,
+              true
+            )
+          end
+        end
+        @regular_headers.each do |name, values|
+          values.each do |value|
+            options = yield name, value
+            encode_policy_field(
+              name,
+              value,
+              nil,
+              nil,
+              options,
+              indexing,
+              huffman_mode,
+              true
+            )
+          end
+        end
+      else
+        @pseudo_headers.each do |name, values|
+          values.each do |value|
+            yield name, value
+            encode_field(name, value, indexing, huffman)
+          end
+        end
+        @regular_headers.each do |name, values|
+          values.each do |value|
+            yield name, value
+            encode_field(name, value, indexing, huffman)
+          end
+        end
+      end
+    ensure
+      @pseudo_headers.clear
+      @regular_headers.clear
+    end
+
+    private def encode_tuple_fields(
+      fields : Enumerable(Tuple(String, String)),
+      indexing,
+      huffman,
+      validate,
+      &
+    )
+      if validate
+        huffman_mode = huffman_mode(huffman)
+        fields.each do |name, value|
+          normalized_name = normalize_name(name)
+          options = yield normalized_name, value
+          encode_policy_field(
+            normalized_name,
+            value,
+            nil,
+            nil,
+            options,
+            indexing,
+            huffman_mode,
+            true
+          )
+        end
+      else
+        fields.each do |name, value|
+          normalized_name = normalize_name(name)
+          yield normalized_name, value
+          encode_field(normalized_name, value, indexing, huffman)
+        end
+      end
+    end
+
+    private def encode_header_fields(
+      fields : Enumerable(HeaderField),
+      indexing : Indexing,
+      huffman,
+      &
+    )
+      huffman_mode = huffman_mode(huffman)
+      fields.each do |field|
+        normalized_name = normalize_name(field.name)
+        options = yield normalized_name, field.value
+        encode_policy_field(
+          normalized_name,
+          field.value,
+          field.indexing,
+          field.huffman,
+          options,
+          indexing,
+          huffman_mode,
+          true
+        )
+      end
+    end
+
+    private def encode_decoded_fields(fields : Enumerable(DecodedHeader), huffman)
+      huffman_mode = huffman_mode(huffman)
+      fields.each do |field|
+        validate_indexing(field.indexing)
+        encode_field(
+          normalize_name(field.name),
+          field.value,
+          field.indexing,
+          huffman_mode
+        )
+      end
+    end
+
+    private def encode_policy_field(
+      name : String,
+      value : String,
+      explicit_indexing : Indexing?,
+      explicit_huffman : HuffmanMode?,
+      options : FieldOptions?,
+      indexing : Indexing,
+      huffman : HuffmanMode,
+      validate : Bool,
+    )
+      if validate
+        validate_indexing(explicit_indexing) if explicit_indexing
+        if options
+          if option_indexing = options.indexing
+            validate_indexing(option_indexing)
           end
         end
       end
 
-      if idx
-        {idx, nil}
+      resolved_indexing = explicit_indexing || options.try(&.indexing) || indexing
+      resolved_huffman = explicit_huffman || options.try(&.huffman) || huffman
+      encode_field(name, value, resolved_indexing, resolved_huffman)
+    end
+
+    private def huffman_mode(huffman : Bool) : HuffmanMode
+      huffman ? HuffmanMode::ALWAYS : HuffmanMode::NEVER
+    end
+
+    private def huffman_mode(huffman : HuffmanMode) : HuffmanMode
+      huffman
+    end
+
+    private def validate_indexing(indexing : Indexing)
+      case indexing
+      when Indexing::NONE, Indexing::INDEXED, Indexing::ALWAYS, Indexing::NEVER
+        nil
+      else
+        raise ArgumentError.new("invalid indexing policy: #{indexing}")
+      end
+    end
+
+    private def normalize_name(name : String) : String
+      name.each_byte do |byte|
+        if byte >= 0x80_u8 || (byte >= 0x41_u8 && byte <= 0x5a_u8)
+          return name.downcase
+        end
+      end
+      name
+    end
+
+    # :nodoc:
+    protected def encode(name, values, indexing, huffman)
+      values.each { |value| encode_field(name, value, indexing, huffman) }
+    end
+
+    # :nodoc:
+    protected def encode_field(name, value, indexing, huffman)
+      if header = indexed(name, value)
+        if indexing == Indexing::NEVER
+          integer(header[0], 4, prefix: Indexing::NEVER)
+          string(value, huffman)
+        elsif header[1]
+          integer(header[0], 7, prefix: Indexing::INDEXED)
+        elsif indexing == Indexing::ALWAYS
+          integer(header[0], 6, prefix: Indexing::ALWAYS)
+          string(value, huffman)
+          add_to_table(name, value)
+        else
+          integer(header[0], 4, prefix: Indexing::NONE)
+          string(value, huffman)
+        end
+      else
+        case indexing
+        when Indexing::ALWAYS
+          add_to_table(name, value)
+          writer.write_byte(Indexing::ALWAYS.value)
+        when Indexing::NEVER
+          writer.write_byte(Indexing::NEVER.value)
+        else
+          writer.write_byte(Indexing::NONE.value)
+        end
+        string(name, huffman)
+        string(value, huffman)
+      end
+    end
+
+    # Generate a compact fast path for pseudo-headers and bucket regular names
+    # by length. STATIC_TABLE remains the only source of names, values, and
+    # indexes.
+    private macro static_indexed(name, value)
+      {% begin %}
+        {% names = [] of Nil %}
+        {% regular_lengths = [] of Nil %}
+        {% for header in STATIC_TABLE %}
+          {% names << header[0] unless names.includes?(header[0]) %}
+          {% unless header[0].starts_with?(":") %}
+            {% regular_lengths << header[0].size unless regular_lengths.includes?(header[0].size) %}
+          {% end %}
+        {% end %}
+
+        case {{ name }}
+        {% for static_name in names %}
+          {% if static_name.starts_with?(":") %}
+            when {{ static_name }}
+              {% first_index = nil %}
+              {% for header, offset in STATIC_TABLE %}
+                {% if header[0] == static_name %}
+                  {% first_index ||= offset + 1 %}
+                  return { {{ offset + 1 }}, {{ header[1] }} } if {{ value }} == {{ header[1] }}
+                {% end %}
+              {% end %}
+              { {{ first_index }}, nil }
+          {% end %}
+        {% end %}
+        else
+          case {{ name }}.bytesize
+          {% for length in regular_lengths.sort %}
+          when {{ length }}
+            case {{ name }}
+            {% for static_name in names %}
+              {% if !static_name.starts_with?(":") && static_name.size == length %}
+                when {{ static_name }}
+                  {% first_index = nil %}
+                  {% for header, offset in STATIC_TABLE %}
+                    {% if header[0] == static_name %}
+                      {% first_index ||= offset + 1 %}
+                      return { {{ offset + 1 }}, {{ header[1] }} } if {{ value }} == {{ header[1] }}
+                    {% end %}
+                  {% end %}
+                  { {{ first_index }}, nil }
+              {% end %}
+            {% end %}
+            end
+          {% end %}
+          end
+        end
+      {% end %}
+    end
+
+    protected def indexed(name : String, value : String)
+      static_entry = static_indexed(name, value)
+
+      dynamic_name_index = nil
+      table.each_with_index do |header, index|
+        next unless header[0] == name
+
+        dynamic_index = index + STATIC_TABLE_SIZE + 1
+        return {dynamic_index, header[1]} if header[1] == value
+        dynamic_name_index ||= dynamic_index unless static_entry
+      end
+
+      if static_entry
+        {static_entry[0], nil}
+      elsif dynamic_name_index
+        {dynamic_name_index, nil}
       end
     end
 
@@ -329,8 +806,25 @@ module HPack
       writer.write_byte(integer.to_u8)
     end
 
-    protected def string(string : String, huffman = false)
+    protected def string(string : String, huffman : Bool)
       if huffman
+        encoded = HPack.huffman.encode(string)
+        integer(encoded.size, 7, prefix: 128)
+        writer.write(encoded)
+      else
+        integer(string.bytesize, 7)
+        writer << string
+      end
+    end
+
+    protected def string(
+      string : String,
+      huffman : HuffmanMode = HuffmanMode::NEVER,
+    )
+      use_huffman = huffman == HuffmanMode::ALWAYS ||
+                    (huffman == HuffmanMode::SMALLER &&
+                     HPack.huffman.encoded_size(string) < string.bytesize)
+      if use_huffman
         encoded = HPack.huffman.encode(string)
         integer(encoded.size, 7, prefix: 128)
         writer.write(encoded)
