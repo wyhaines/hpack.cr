@@ -31,14 +31,15 @@ module HPack
   # )
   # ```
   struct Encoder
-    # TODO: allow per header name/value indexing configuration
-    # TODO: allow per header name/value huffman encoding configuration
+    # Future improvement: allow per-header indexing configuration.
+    # Future improvement: allow per-header Huffman encoding configuration.
 
     private getter writer : IO::Memory = IO::Memory.new
     @saved_writer : IO::Memory
     getter table : DynamicTable
     property default_indexing : Indexing
-    property default_huffman : Bool
+    # Retain the established getter name for API compatibility.
+    property default_huffman : Bool # ameba:disable Naming/QueryBoolMethods
     {% if flag?(:preview_mt) %}
       @mutex = Mutex.new
     {% end %}
@@ -54,7 +55,7 @@ module HPack
       headers : HTTP::Headers,
       indexing = default_indexing,
       huffman = default_huffman,
-      _writer : IO::Memory? = nil
+      _writer : IO::Memory? = nil,
     )
       {% begin %}
       {% if flag?(:preview_mt) %}
@@ -120,8 +121,8 @@ module HPack
       # traffic in order to determine which headers are most common, and putting
       # them at the top of the case statement.
 
-      # TODO: Can this case be built with a macro using the STATIC_TABLE instead
-      # of just hardcoding it here and leaving the STATIC_TABLE unreferenced?
+      # Future improvement: build this case from STATIC_TABLE with a macro
+      # instead of hardcoding it and leaving STATIC_TABLE unreferenced.
       idx = case name
             when ":authority"
               1

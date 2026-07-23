@@ -44,7 +44,7 @@ module HPack
           next
         elsif reader.current_byte.bit(4) == 1 # 0001....  literal never indexed
           index, name, value = literal_never_indexed
-          # TODO: retain the never_indexed property
+          # Future improvement: retain the never_indexed property.
         else # 0000....  literal without indexing
           index, name, value = literal_without_indexing
         end
@@ -110,7 +110,7 @@ module HPack
 
       m = 0
       loop do
-        # TODO: raise if integer grows over limit
+        # Future improvement: raise if integer grows over the limit.
         byte = reader.read_byte
         integer += (byte & 127).to_i * (2 ** (m * 7))
         break unless byte & 128 == 128

@@ -39,11 +39,11 @@ headers = HTTP::Headers{
   "set-cookie"       => "foo=asdfasdfasdfasdfasdfasdfasdf; max-age=3600; version=1",
 }
 
-Benchmark.ips do |bm|
-  bm.report("optimized encoder") do
+Benchmark.ips do |benchmark|
+  benchmark.report("optimized encoder") do
     encoder.encode(headers)
   end
-  bm.report("optimized decoder") do
+  benchmark.report("optimized decoder") do
     decoder.decode bytes1
     decoder.decode bytes2
     decoder.decode bytes3
