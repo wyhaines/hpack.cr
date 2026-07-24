@@ -709,13 +709,25 @@ module HPack
       end
     end
 
+    # HTTP/2 requires lowercase ASCII field names, while HPACK treats names as
+    # opaque octets. Only the bytes A-Z are mapped; every other octet,
+    # including non-ASCII and invalid UTF-8, passes through unchanged.
     private def normalize_name(name : String) : String
+      needs_normalization = false
       name.each_byte do |byte|
-        if byte >= 0x80_u8 || (byte >= 0x41_u8 && byte <= 0x5a_u8)
-          return name.downcase
+        if 0x41_u8 <= byte <= 0x5a_u8
+          needs_normalization = true
+          break
         end
       end
-      name
+      return name unless needs_normalization
+
+      String.new(name.bytesize) do |buffer|
+        name.to_slice.each_with_index do |byte, index|
+          buffer[index] = 0x41_u8 <= byte <= 0x5a_u8 ? byte + 0x20_u8 : byte
+        end
+        {name.bytesize, 0}
+      end
     end
 
     # :nodoc:

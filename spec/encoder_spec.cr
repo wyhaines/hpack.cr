@@ -103,7 +103,7 @@ describe HPack::Encoder do
       "X-UPPER"  => "x-upper",
       "x-MiXeD"  => "x-mixed",
       ""         => "",
-      "Ä-Header" => "ä-header",
+      "Ä-Header" => "Ä-header",
     }.each do |input, normalized|
       fields = [{input, "value"}]
       expected = HPack::Encoder.new.encode([{normalized, "value"}])
@@ -111,6 +111,24 @@ describe HPack::Encoder do
       HPack::Encoder.new.encode(fields).should eq expected
       HPack::Encoder.new.encode(HTTP::Headers{input => "value"}).should eq expected
     end
+  end
+
+  it "lowercases ASCII name letters while preserving all other octets" do
+    name = String.new(Bytes[0x58, 0xc3, 0x84, 0xff, 0x5a]) # "X", "Ä", 0xff, "Z"
+    encoded = HPack::Encoder.new.encode([{name, "value"}])
+
+    decoded = HPack::Decoder.new.decode_with_metadata(encoded)
+    decoded[:fields].first.name.to_slice.should eq Bytes[
+      0x78, 0xc3, 0x84, 0xff, 0x7a,
+    ]
+  end
+
+  it "round-trips a name with no ASCII uppercase letters unchanged" do
+    name = String.new(Bytes[0x78, 0xff, 0x01, 0x7a])
+    encoded = HPack::Encoder.new.encode([{name, "value"}])
+
+    decoded = HPack::Decoder.new.decode_with_metadata(encoded)
+    decoded[:fields].first.name.to_slice.should eq Bytes[0x78, 0xff, 0x01, 0x7a]
   end
 
   it "appends repeated header and field blocks with encode_into" do
