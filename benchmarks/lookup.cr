@@ -1,6 +1,6 @@
 require "./fixtures"
 
-struct HPack::Encoder
+class HPack::Encoder
   # :nodoc:
   def benchmark_lookup(name, value)
     indexed(name, value)

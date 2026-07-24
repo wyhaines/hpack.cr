@@ -31,7 +31,7 @@ module HPack
   #   }
   # )
   # ```
-  struct Encoder
+  class Encoder
     private getter writer : IO
     @buffer : IO::Memory
     @pseudo_headers : Array(Tuple(String, Array(String)))

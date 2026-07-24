@@ -19,7 +19,7 @@ module HPack
   # # To decode headers into an existing `HTTP::Headers` instance:
   # headers = decoder.decode(bytes, HTTP::Headers.new)
   # ```
-  struct Decoder
+  class Decoder
     private getter! reader : SliceReader
     getter table : DynamicTable
     getter max_table_size : Int32

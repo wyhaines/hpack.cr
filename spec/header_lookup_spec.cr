@@ -1,6 +1,6 @@
 require "./spec_helper"
 
-struct HPack::Encoder
+class HPack::Encoder
   # :nodoc:
   def lookup_for_spec(name : String, value : String)
     indexed(name, value)
