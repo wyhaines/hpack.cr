@@ -154,6 +154,41 @@ headers = decoder.decode(bytes, HTTP::Headers.new)
 decoder.max_table_size = 1024
 ```
 
+### Bounded decoding
+
+`decode` and `decode_with_metadata` place no bound on decompressed output. For
+untrusted network input, `decode_each` yields one ordered `DecodedHeader` at a
+time and can enforce a decompressed field-section budget using the HTTP/2 size
+rule (`name.bytesize + value.bytesize + 32` per field):
+
+```crystal
+result = decoder.decode_each(
+  bytes,
+  max_field_section_size: 64 * 1024,
+) do |field|
+  # Validate or retain this ordered field.
+end
+
+result.decoded_size   # Total size of the block, including suppressed fields.
+result.limit_exceeded # True when the budget was crossed.
+```
+
+Crossing the budget never stops decompression: the crossing field and every
+later field are counted but not yielded, while dynamic-table insertions and
+size updates still apply, so the compression context stays synchronized with
+the peer. A caller can reject the field section (for HTTP/2, typically a
+stream-level refusal) and keep using the same decoder and connection.
+
+To bound the allocation for any single literal, configure a hard cap in the
+constructor. Exceeding it raises `HPack::ResourceLimitError` rather than
+`HPack::Error`, because the input may be valid HPACK that this decoder refuses
+to materialize. A hard-cap failure interrupts decompression, so that decoder's
+compression context is stale and the decoder must be discarded:
+
+```crystal
+decoder = HPack::Decoder.new(max_decoded_string_size: 64 * 1024)
+```
+
 ## Benchmarks
 
 The benchmark entry point validates its fixtures before timing separate
