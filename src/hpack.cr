@@ -1,3 +1,4 @@
+require "http/headers"
 require "./version"
 require "./header_field"
 require "./encoder"
