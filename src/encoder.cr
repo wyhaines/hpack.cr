@@ -51,19 +51,20 @@ module HPack
     {% end %}
 
     def initialize(indexing = Indexing::NONE, huffman = false, max_table_size = 4096)
+      normalized_max_table_size = normalize_table_size(max_table_size)
       @buffer = IO::Memory.new
       @writer = @buffer
       @pseudo_headers = [] of Tuple(String, Array(String))
       @regular_headers = [] of Tuple(String, Array(String))
       @table_snapshot = nil
-      @table_snapshot_maximum = max_table_size
+      @table_snapshot_maximum = normalized_max_table_size
       @table_transaction_active = false
       @table_snapshot_captured = false
       @pending_table_size_minimum = nil
       @pending_table_size_final = nil
       @default_indexing = indexing
       @default_huffman = huffman
-      @table = DynamicTable.new(max_table_size)
+      @table = DynamicTable.new(normalized_max_table_size)
     end
 
     # Changes the dynamic-table capacity and queues the corresponding HPACK

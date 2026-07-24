@@ -25,7 +25,8 @@ module HPack
     getter max_table_size : Int32
     @required_table_size_update : Int32?
 
-    def initialize(@max_table_size = 4096)
+    def initialize(max_table_size = 4096)
+      @max_table_size = normalize_table_size(max_table_size)
       @table = DynamicTable.new(@max_table_size)
       @huffman_output = IO::Memory.new
       @required_table_size_update = nil

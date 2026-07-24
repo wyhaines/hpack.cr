@@ -1,6 +1,21 @@
 require "./spec_helper"
 
 describe HPack::Decoder do
+  describe ".new" do
+    it "rejects negative and unrepresentable table sizes" do
+      expect_raises(ArgumentError, /table size/) { HPack::Decoder.new(-1) }
+      expect_raises(ArgumentError, /table size/) { HPack::Decoder.new(Int64::MAX) }
+      expect_raises(ArgumentError, /table size/) { HPack::Decoder.new(UInt32::MAX) }
+      expect_raises(ArgumentError, /table size/) { HPack::Decoder.new(UInt64::MAX) }
+    end
+
+    it "accepts boundary sizes from any integer type" do
+      HPack::Decoder.new(0).table.maximum.should eq 0
+      HPack::Decoder.new(1024_u32).max_table_size.should eq 1024
+      HPack::Decoder.new(Int32::MAX.to_i64).max_table_size.should eq Int32::MAX
+    end
+  end
+
   describe "#max_table_size=" do
     it "validates assigned limits without resizing the table immediately" do
       decoder = HPack::Decoder.new

@@ -52,6 +52,28 @@ module EncoderTableSizeSpec
 end
 
 describe HPack::Encoder do
+  describe ".new" do
+    it "rejects negative and unrepresentable table sizes" do
+      expect_raises(ArgumentError, /table size/) do
+        HPack::Encoder.new(max_table_size: -1)
+      end
+      expect_raises(ArgumentError, /table size/) do
+        HPack::Encoder.new(max_table_size: Int64::MAX)
+      end
+      expect_raises(ArgumentError, /table size/) do
+        HPack::Encoder.new(max_table_size: UInt32::MAX)
+      end
+      expect_raises(ArgumentError, /table size/) do
+        HPack::Encoder.new(max_table_size: UInt64::MAX)
+      end
+    end
+
+    it "accepts boundary sizes from any integer type" do
+      HPack::Encoder.new(max_table_size: 0).table.maximum.should eq 0
+      HPack::Encoder.new(max_table_size: 1024_u32).table.maximum.should eq 1024
+    end
+  end
+
   describe "#resize_table" do
     it "encodes boundary sizes with an empty field block" do
       encoder = HPack::Encoder.new
