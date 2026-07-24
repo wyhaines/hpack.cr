@@ -4,7 +4,7 @@ require "./indexing"
 require "./header_field"
 
 module HPack
-  # To decode headers, used a `HPack::Decoder` instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.
+  # To decode headers, use a `HPack::Decoder` instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.
   #
   # ```
   # # To create a default Decoder:
@@ -22,11 +22,31 @@ module HPack
   struct Decoder
     private getter! reader : SliceReader
     getter table : DynamicTable
-    property max_table_size : Int32
+    getter max_table_size : Int32
+    @required_table_size_update : Int32?
 
     def initialize(@max_table_size = 4096)
       @table = DynamicTable.new(@max_table_size)
       @huffman_output = IO::Memory.new
+      @required_table_size_update = nil
+    end
+
+    # Changes the protocol limit for dynamic-table size updates.
+    #
+    # Reducing this limit below the peer's current table capacity requires a
+    # conforming update at the beginning of the next decoded field block. The
+    # table itself is resized only when that instruction is received.
+    def max_table_size=(size : Int)
+      normalized_size = normalize_table_size(size)
+      if normalized_size < table.maximum
+        @required_table_size_update =
+          if required_size = @required_table_size_update
+            normalized_size < required_size ? normalized_size : required_size
+          else
+            normalized_size
+          end
+      end
+      @max_table_size = normalized_size
     end
 
     def decode(bytes, headers = HTTP::Headers.new)
@@ -47,6 +67,8 @@ module HPack
     private def decode_into(bytes, headers, fields : Array(DecodedHeader)?)
       @reader = SliceReader.new(bytes)
       decoded_header = false
+      table_size_update_count = 0
+      ensure_required_table_size_update
 
       until reader.done?
         if reader.current_byte.bit(7) == 1 # 1.......  indexed
@@ -57,10 +79,8 @@ module HPack
           indexing = Indexing::ALWAYS
         elsif reader.current_byte.bit(5) == 1 # 001.....  table max size update
           raise Error.new("unexpected dynamic table size update") if decoded_header
-          if (new_size = integer(5)) > max_table_size
-            raise Error.new("dynamic table size update is larger than SETTINGS_HEADER_TABLE_SIZE(#{max_table_size}")
-          end
-          table.resize(new_size)
+          table_size_update_count =
+            apply_dynamic_table_size_update(table_size_update_count)
           next
         elsif reader.current_byte.bit(4) == 1 # 0001....  literal never indexed
           _index, name, value = literal_never_indexed
@@ -75,9 +95,57 @@ module HPack
         fields << DecodedHeader.new(name, value, indexing) if fields
       end
 
+      @required_table_size_update = nil
       headers
     rescue ex : IndexError
       raise Error.new("invalid compression")
+    end
+
+    private def normalize_table_size(size : Int) : Int32
+      if size < 0 || size > Int32::MAX
+        raise ArgumentError.new(
+          "table size must be between 0 and #{Int32::MAX}: #{size}"
+        )
+      end
+
+      size.to_i32
+    end
+
+    @[AlwaysInline]
+    private def ensure_required_table_size_update
+      return unless @required_table_size_update
+      unless reader.done?
+        return if reader.current_byte & 0xe0_u8 == 0x20_u8
+      end
+
+      raise Error.new("required dynamic table size update is missing")
+    end
+
+    private def apply_dynamic_table_size_update(update_count : Int32)
+      update_count += 1
+      if update_count > 2
+        raise Error.new("too many dynamic table size updates")
+      end
+
+      new_size = integer(5)
+      if new_size > max_table_size
+        raise Error.new(
+          "dynamic table size update is larger than " \
+          "SETTINGS_HEADER_TABLE_SIZE (#{max_table_size})"
+        )
+      end
+      if update_count == 1
+        if required_size = @required_table_size_update
+          if new_size > required_size
+            raise Error.new(
+              "required dynamic table size update exceeds #{required_size}"
+            )
+          end
+        end
+      end
+
+      table.resize(new_size)
+      update_count
     end
 
     @[AlwaysInline]

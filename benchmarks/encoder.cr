@@ -31,6 +31,7 @@ module HPackBench
     validate_encoder_output_ownership
     validate_warmed_encoder
     validate_eviction_encoder
+    validate_encoder_table_resize
   end
 
   def self.add_encoder_reports(benchmark, extended)
@@ -48,6 +49,7 @@ module HPackBench
     add_caller_output_report(benchmark)
     add_field_output_reports(benchmark)
     add_warmed_dynamic_report(benchmark)
+    add_table_resize_report(benchmark)
     add_eviction_encoder_report(benchmark) if extended
   end
 
@@ -108,6 +110,24 @@ module HPackBench
       assert(encoder.table.bytesize <= 96, "small encoder table limit")
       assert(decoder.table.bytesize <= 96, "small decoder table limit")
     end
+  end
+
+  private def self.validate_encoder_table_resize
+    encoder = HPack::Encoder.new(max_table_size: 128)
+    decoder = HPack::Decoder.new(128)
+    encoder.resize_table(32)
+    encoder.resize_table(64)
+    decoder.max_table_size = 32
+    decoder.max_table_size = 64
+
+    encoded = encoder.encode([] of Tuple(String, String))
+    assert(
+      encoded == Bytes[0x3f, 0x01, 0x3f, 0x21],
+      "encoder table-resize instructions"
+    )
+    decoder.decode(encoded)
+    assert(encoder.table.maximum == 64, "resized encoder table maximum")
+    assert(decoder.table.maximum == 64, "resized decoder table maximum")
   end
 
   private def self.add_cold_encoder_report(benchmark, label, headers, indexing, huffman)
@@ -181,6 +201,21 @@ module HPackBench
 
     benchmark.report("encoder/warm exact dynamic/Huffman") do
       consume(encoder.encode(headers))
+    end
+  end
+
+  private def self.add_table_resize_report(benchmark)
+    encoder = HPack::Encoder.new
+    fields = [] of Tuple(String, String)
+    writer = IO::Memory.new
+    size = 1024
+
+    benchmark.report("encoder/warm/table resize/caller buffer") do
+      encoder.resize_table(size)
+      size = size == 1024 ? 2048 : 1024
+      writer.clear
+      encoder.encode_into(fields, writer)
+      consume(writer.to_slice)
     end
   end
 

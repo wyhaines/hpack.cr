@@ -72,3 +72,29 @@ For a same-session pre-performance reference, the former two-report harness
 measured its warmed encoder at 1.86M ops/s, 536.29 ns/op, 784 B/op and its
 three-block decoder at 1.05M ops/s, 954.00 ns/op, 1.19 kB/op. Those combined
 workloads are not directly comparable to most focused cases above.
+
+## Dynamic-Table Size Coordination
+
+Recorded on 2026-07-23 after implementing negotiated encoder resizing and
+decoder limit synchronization:
+
+```text
+encoder/warm/table resize/caller buffer   67.78M   14.75ns     0B/op
+```
+
+Untimed validation first confirmed the exact two-update prefix and matching
+encoder/decoder capacities. A same-session release comparison against the
+clean `a909c58` revision showed identical allocation counts in every decoder
+case and no consistent timing regression. Representative control-to-current
+results were:
+
+```text
+warm/static-only                   122.88ns -> 118.65ns
+warm/literal raw                    91.42ns ->  90.61ns
+reset/RFC dynamic sequence         887.22ns -> 872.93ns
+cold/table-size update             122.91ns -> 123.16ns
+cold/small-table sequence          869.76ns -> 884.28ns
+```
+
+These measurements document the feature cost; CI does not enforce timing
+thresholds.

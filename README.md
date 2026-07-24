@@ -65,6 +65,21 @@ fields = [
 bytes = encoder.encode(fields)
 ```
 
+When a negotiated dynamic-table limit becomes effective, use
+`Encoder#resize_table`. It resizes the local table immediately and prefixes
+the next encoded field block with the required HPACK update. Multiple changes
+between blocks are coalesced to the smallest and final sizes:
+
+```crystal
+encoder.resize_table(1024)
+encoder.resize_table(2048)
+bytes = encoder.encode(headers) # Begins with updates for 1024, then 2048.
+```
+
+Calling `encoder.table.resize` changes only local state and does not notify the
+peer. The HTTP/2 implementation remains responsible for applying SETTINGS at
+the correct acknowledgement boundary.
+
 Use `HPack::HeaderField` when fields need different indexing or Huffman
 behavior. Explicit field options override a policy block, which overrides the
 per-call arguments and encoder defaults. `SMALLER` encodes each emitted name
@@ -119,7 +134,7 @@ forwarded = outbound_encoder.encode(
 )
 ```
 
-To decode headers, used a `HPack::Decoder` instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.
+To decode headers, use a `HPack::Decoder` instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.
 
 ```crystal
 # To create a default Decoder:
@@ -133,6 +148,10 @@ headers = decoder.decode(bytes)
 
 # To decode headers into an existing `HTTP::Headers` instance:
 headers = decoder.decode(bytes, HTTP::Headers.new)
+
+# Apply a newly effective local protocol limit. If the peer's current table
+# capacity is larger, its next field block must begin with a conforming update.
+decoder.max_table_size = 1024
 ```
 
 ## Benchmarks

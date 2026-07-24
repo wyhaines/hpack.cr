@@ -40,6 +40,8 @@ module HPack
     @table_snapshot_maximum : Int32
     @table_transaction_active : Bool
     @table_snapshot_captured : Bool
+    @pending_table_size_minimum : Int32?
+    @pending_table_size_final : Int32?
     getter table : DynamicTable
     property default_indexing : Indexing
     # Retain the established getter name for API compatibility.
@@ -57,9 +59,32 @@ module HPack
       @table_snapshot_maximum = max_table_size
       @table_transaction_active = false
       @table_snapshot_captured = false
+      @pending_table_size_minimum = nil
+      @pending_table_size_final = nil
       @default_indexing = indexing
       @default_huffman = huffman
       @table = DynamicTable.new(max_table_size)
+    end
+
+    # Changes the dynamic-table capacity and queues the corresponding HPACK
+    # size update for the beginning of the next encoded field block.
+    #
+    # The local table is resized immediately. Multiple changes before a block
+    # are coalesced to the smallest requested size followed by the final size.
+    # Pending updates are consumed only after a field block is encoded
+    # successfully.
+    #
+    # Use this operation for negotiated capacity changes. Calling
+    # `#table.resize` directly does not signal the peer decoder.
+    def resize_table(size : Int) : Nil
+      normalized_size = normalize_table_size(size)
+
+      {% if flag?(:preview_mt) %}
+        @mutex.synchronize { resize_table_unlocked(normalized_size) }
+      {% else %}
+        resize_table_unlocked(normalized_size)
+      {% end %}
+      nil
     end
 
     # Encodes *headers* and returns an owned byte slice.
@@ -432,27 +457,62 @@ module HPack
     private def with_writer(output : IO, transactional : Bool, &)
       previous_writer = @writer
       @writer = output
+      completed = false
       if transactional
         @table_transaction_active = true
         @table_snapshot_captured = false
-        completed = false
-        begin
-          yield
-          completed = true
-        ensure
-          rollback_table unless completed
+      end
+
+      begin
+        emit_pending_table_size_updates
+        yield
+        completed = true
+      ensure
+        rollback_table if transactional && !completed
+        clear_pending_table_size_updates if completed
+        if transactional
           @table_transaction_active = false
           @table_snapshot_captured = false
           @table_snapshot.try(&.clear)
-          @writer = previous_writer
         end
-      else
-        begin
-          yield
-        ensure
-          @writer = previous_writer
-        end
+        @writer = previous_writer
       end
+    end
+
+    private def normalize_table_size(size : Int) : Int32
+      if size < 0 || size > Int32::MAX
+        raise ArgumentError.new(
+          "table size must be between 0 and #{Int32::MAX}: #{size}"
+        )
+      end
+
+      size.to_i32
+    end
+
+    private def resize_table_unlocked(size : Int32)
+      return if table.maximum == size
+
+      table.resize(size)
+      @pending_table_size_minimum = if minimum = @pending_table_size_minimum
+                                      size < minimum ? size : minimum
+                                    else
+                                      size
+                                    end
+      @pending_table_size_final = size
+    end
+
+    private def emit_pending_table_size_updates
+      return unless minimum = @pending_table_size_minimum
+
+      integer(minimum, 5, prefix: 0x20_u8)
+      if final = @pending_table_size_final
+        integer(final, 5, prefix: 0x20_u8) unless final == minimum
+      end
+    end
+
+    private def clear_pending_table_size_updates
+      @pending_table_size_minimum = nil
+      @pending_table_size_final = nil
     end
 
     private def add_to_table(name : String, value : String)
@@ -800,7 +860,7 @@ module HPack
 
       while integer >= 128
         writer.write_byte(((integer % 128) + 128).to_u8)
-        integer /= 128
+        integer //= 128
       end
 
       writer.write_byte(integer.to_u8)

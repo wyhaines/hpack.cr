@@ -25,6 +25,11 @@ module HPack
       super
     end
 
+    # Changes this table's local capacity and evicts entries as needed.
+    #
+    # Encoder users applying a negotiated capacity change should call
+    # `Encoder#resize_table` instead so the peer receives the required HPACK
+    # dynamic-table size update.
     def resize(@maximum)
       cleanup
     end
