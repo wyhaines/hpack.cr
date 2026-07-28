@@ -249,3 +249,27 @@ describe "HPack::Encoder header lookup" do
     ).should eq Bytes[0x0f, 0x2f, 0x03, 0x6e, 0x65, 0x77]
   end
 end
+
+describe HPack::DynamicTable do
+  it "finds exact and name-only matches by relative index" do
+    table = HPack::DynamicTable.new(4096)
+    table.add("x-a", "1") # index 2 after next add
+    table.add("x-b", "2") # index 1
+    table.find_index("x-b", "2").should eq 1
+    table.find_index("x-a", "1").should eq 2
+    table.find_index("x-a", "9").should be_nil
+    table.find_name_index("x-a").should eq 2
+  end
+
+  it "prefers the newest duplicate and survives eviction of older ones" do
+    # Room for both "k"/"v" entries (34 bytes each = 68) plus the "z" entry
+    # (53 bytes) minus exactly one evicted 34-byte entry: 68 + 53 - 34 = 87.
+    # Capacity 90 forces eviction of only the oldest duplicate.
+    table = HPack::DynamicTable.new(90)
+    table.add("k", "v")
+    table.add("k", "v") # duplicate, newest wins
+    table.find_index("k", "v").should eq 1
+    table.add("z", "long-enough-to-evict") # evicts only the oldest "k"
+    table.find_index("k", "v").should eq 2 # survivor still findable
+  end
+end

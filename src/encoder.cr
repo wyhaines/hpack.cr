@@ -822,19 +822,14 @@ module HPack
     protected def indexed(name : String, value : String)
       static_entry = static_indexed(name, value)
 
-      dynamic_name_index = nil
-      table.each_with_index do |header, index|
-        next unless header[0] == name
-
-        dynamic_index = index + STATIC_TABLE_SIZE + 1
-        return {dynamic_index, header[1]} if header[1] == value
-        dynamic_name_index ||= dynamic_index unless static_entry
+      if rel = table.find_index(name, value)
+        return {rel + STATIC_TABLE_SIZE, value}
       end
 
       if static_entry
         {static_entry[0], nil}
-      elsif dynamic_name_index
-        {dynamic_name_index, nil}
+      elsif rel = table.find_name_index(name)
+        {rel + STATIC_TABLE_SIZE, nil}
       end
     end
 
