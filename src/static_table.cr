@@ -1,6 +1,6 @@
 module HPack
   # :nodoc:
-  STATIC_TABLE = {
+  STATIC_TABLE = [
     {":authority", ""},
     {":method", "GET"},
     {":method", "POST"},
@@ -62,7 +62,7 @@ module HPack
     {"vary", ""},
     {"via", ""},
     {"www-authenticate", ""},
-  }
+  ]
 
   # :nodoc:
   STATIC_TABLE_SIZE = STATIC_TABLE.size
