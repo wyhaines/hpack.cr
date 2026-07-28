@@ -157,6 +157,34 @@ describe HPack::Huffman do
       HPack.huffman.decode(encoded).to_slice.should eq Bytes[0_u8, 10_u8]
     end
 
+    it "encodes directly into a caller-owned destination given a bit length" do
+      input = "www.example.com"
+      bit_length = HPack.huffman.encoded_bit_length(input)
+      expected = HPack.huffman.encode(input)
+
+      exact = Bytes.new(expected.size)
+      written = HPack.huffman.encode(input, exact, bit_length)
+      written.should eq expected.size
+      exact.should eq expected
+
+      # An oversized destination is written identically in its leading
+      # bytes; only the first `written` bytes are meaningful to the caller.
+      oversized = Bytes.new(expected.size + 16)
+      written_oversized = HPack.huffman.encode(input, oversized, bit_length)
+      written_oversized.should eq expected.size
+      oversized[0, expected.size].should eq expected
+    end
+
+    it "raises when the destination is too small for the encoded output" do
+      input = "www.example.com"
+      bit_length = HPack.huffman.encoded_bit_length(input)
+      too_small = Bytes.new(1)
+
+      expect_raises(HPack::Error) do
+        HPack.huffman.encode(input, too_small, bit_length)
+      end
+    end
+
     it "matches a bit-at-a-time reference for every symbol at every bit offset" do
       256.times do |value|
         8.times do |prefix_symbols|

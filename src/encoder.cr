@@ -55,6 +55,10 @@ module HPack
     @eviction_journal_listener : Proc(Tuple(String, String), Nil)
     @pending_table_size_minimum : Int32?
     @pending_table_size_final : Int32?
+    # Grow-only scratch reused across every Huffman-encoded name/value so a
+    # steady-state encode allocates nothing beyond the final owned output
+    # slice. Never exposed: callers only ever see bytes copied out of it.
+    @huffman_scratch : Bytes
     getter table : DynamicTable
     property default_indexing : Indexing
     # Retain the established getter name for API compatibility.
@@ -78,6 +82,7 @@ module HPack
       @eviction_journal_listener = ->(header : Tuple(String, String)) { @transaction_evicted << header }
       @pending_table_size_minimum = nil
       @pending_table_size_final = nil
+      @huffman_scratch = Bytes.new(128)
       @default_indexing = indexing
       @default_huffman = huffman
       @table = DynamicTable.new(normalized_max_table_size)
@@ -622,16 +627,17 @@ module HPack
           end
         end
       else
+        huffman_mode = huffman_mode(huffman)
         @pseudo_headers.each do |name, values|
           values.each do |value|
             yield name, value
-            encode_field(name, value, indexing, huffman)
+            encode_field(name, value, indexing, huffman_mode)
           end
         end
         @regular_headers.each do |name, values|
           values.each do |value|
             yield name, value
-            encode_field(name, value, indexing, huffman)
+            encode_field(name, value, indexing, huffman_mode)
           end
         end
       end
@@ -664,10 +670,11 @@ module HPack
           )
         end
       else
+        huffman_mode = huffman_mode(huffman)
         fields.each do |name, value|
           normalized_name = normalize_name(name)
           yield normalized_name, value
-          encode_field(normalized_name, value, indexing, huffman)
+          encode_field(normalized_name, value, indexing, huffman_mode)
         end
       end
     end
@@ -929,32 +936,38 @@ module HPack
       writer.write_byte(integer.to_u8)
     end
 
-    protected def string(string : String, huffman : Bool)
-      if huffman
-        encoded = HPack.huffman.encode(string)
-        integer(encoded.size, 7, prefix: 128)
-        writer.write(encoded)
-      else
-        integer(string.bytesize, 7)
-        writer << string
+    # Grows `@huffman_scratch` (by doubling to the next power of two) only
+    # when it is too small for *byte_count*, so repeated calls with similar
+    # sizes settle into zero further allocations.
+    private def huffman_scratch_for(byte_count : Int32) : Bytes
+      if @huffman_scratch.size < byte_count
+        @huffman_scratch = Bytes.new(Math.pw2ceil(byte_count))
       end
+      @huffman_scratch
     end
 
     protected def string(
       string : String,
       huffman : HuffmanMode = HuffmanMode::NEVER,
     )
-      use_huffman = huffman == HuffmanMode::ALWAYS ||
-                    (huffman == HuffmanMode::SMALLER &&
-                     HPack.huffman.encoded_size(string) < string.bytesize)
-      if use_huffman
-        encoded = HPack.huffman.encode(string)
-        integer(encoded.size, 7, prefix: 128)
-        writer.write(encoded)
-      else
+      if huffman.never?
         integer(string.bytesize, 7)
         writer << string
+        return
       end
+
+      bits = HPack.huffman.encoded_bit_length(string)
+      size = ((bits + 7) // 8).to_i32
+      if huffman.smaller? && size >= string.bytesize
+        integer(string.bytesize, 7)
+        writer << string
+        return
+      end
+
+      scratch = huffman_scratch_for(size)
+      HPack.huffman.encode(string, scratch, bits)
+      integer(size, 7, prefix: 128)
+      writer.write(scratch[0, size])
     end
   end
 end

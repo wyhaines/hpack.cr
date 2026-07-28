@@ -30,8 +30,8 @@ module HPack
     end
 
     # Returns the number of bits needed to Huffman-encode *string*.
-    def encoded_bit_length(string : String) : UInt64
-      bit_length = 0_u64
+    def encoded_bit_length(string : String) : Int64
+      bit_length = 0_i64
 
       string.each_byte do |byte|
         bit_length += table[byte][2]
@@ -48,9 +48,20 @@ module HPack
       encoded_size(encoded_bit_length(string))
     end
 
-    def encode(string : String) : Bytes
-      bit_length = encoded_bit_length(string)
-      output = Bytes.new(encoded_size(bit_length), 0_u8)
+    # Huffman-encodes *string* into *dest*, starting at offset 0.
+    #
+    # Writes exactly `(bit_length + 7) // 8` bytes, where *bit_length* is
+    # the caller-supplied bit length previously obtained from
+    # `#encoded_bit_length` for the same string, and returns that byte
+    # count. *dest* must be at least that many bytes long; the caller (the
+    # `Encoder`'s scratch buffer, in the common case) owns sizing it.
+    def encode(string : String, dest : Bytes, bit_length : Int64) : Int32
+      byte_count = encoded_size(bit_length)
+      if dest.size < byte_count
+        raise Error.new("destination buffer too small for huffman-encoded output")
+      end
+
+      out = dest.to_unsafe
       output_index = 0
       accumulator = 0_u64
       pending_bits = 0_u8
@@ -62,23 +73,25 @@ module HPack
 
         while pending_bits >= 8
           pending_bits -= 8
-          output[output_index] = ((accumulator >> pending_bits) & 0xff_u64).to_u8
+          out[output_index] = (accumulator >> pending_bits).to_u8!
           output_index += 1
-        end
-
-        if pending_bits == 0
-          accumulator = 0_u64
-        else
-          accumulator &= (1_u64 << pending_bits) - 1
         end
       end
 
       if pending_bits > 0
         padding_bits = 8_u8 - pending_bits
-        output[output_index] = ((accumulator << padding_bits) | (0xff_u64 >> pending_bits)).to_u8
+        out[output_index] = ((accumulator << padding_bits) | (0xff_u64 >> pending_bits)).to_u8!
       end
 
-      output
+      byte_count
+    end
+
+    # Huffman-encodes *string* and returns a freshly allocated `Bytes`.
+    def encode(string : String) : Bytes
+      bit_length = encoded_bit_length(string)
+      bytes = Bytes.new(encoded_size(bit_length))
+      encode(string, bytes, bit_length)
+      bytes
     end
 
     def decode(bytes : Bytes) : String
@@ -114,7 +127,7 @@ module HPack
       end
     end
 
-    private def encoded_size(bit_length : UInt64) : Int32
+    private def encoded_size(bit_length : Int64) : Int32
       byte_size = (bit_length + 7) // 8
       if byte_size > Int32::MAX
         raise Error.new("Huffman output exceeds maximum slice size")

@@ -396,6 +396,14 @@ describe HPack::Encoder do
     {"date", "Mon, 21 Oct 2013 20:13:22 GMT"}.should eq encoder.table[2]
   end
 
+  it "reuses the huffman scratch without corrupting earlier output" do
+    encoder = HPack::Encoder.new(huffman: true)
+    first = encoder.encode([HPack::HeaderField.new("x-a", "aaaaaaaaaa")])
+    copy = first.dup
+    encoder.encode([HPack::HeaderField.new("x-b", "bbbbbbbbbb")])
+    first.should eq copy # returned slices must be owned, not scratch views
+  end
+
   it "restores table contents, order, and maximum after a failed transactional encode" do
     encoder = HPack::Encoder.new(max_table_size: 128)
     decoder = HPack::Decoder.new(128)
