@@ -329,10 +329,11 @@ module HPack
     end
 
     def integer(n)
-      integer = (reader.read_byte & (0xff >> (8 - n))).to_i64
-      prefix_maximum = (2_i64 ** n) - 1
-      return integer.to_i32 if integer < prefix_maximum
+      prefix_maximum = (1 << n) - 1
+      value = reader.read_byte.to_i32 & prefix_maximum
+      return value if value < prefix_maximum
 
+      integer = value.to_i64
       maximum = Int32::MAX.to_i64
       multiplier = 1_i64
       beyond_limit = false
