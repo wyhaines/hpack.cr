@@ -395,4 +395,89 @@ describe HPack::Encoder do
     {"content-encoding", "gzip"}.should eq encoder.table[1]
     {"date", "Mon, 21 Oct 2013 20:13:22 GMT"}.should eq encoder.table[2]
   end
+
+  it "restores table contents, order, and maximum after a failed transactional encode" do
+    encoder = HPack::Encoder.new(max_table_size: 128)
+    decoder = HPack::Decoder.new(128)
+
+    seed_bytes = encoder.encode([
+      HPack::HeaderField.new("x-seed", "1", indexing: HPack::Indexing::ALWAYS),
+    ])
+    decoder.decode(seed_bytes)
+
+    # Change the maximum directly (bypassing the encoder's wire-level
+    # resize bookkeeping, which is exercised elsewhere) so that "maximum
+    # restored after rollback" is a non-trivial assertion.
+    encoder.table.maximum = 64
+    decoder.table.maximum = 64
+    before = encoder.table.to_a
+    before_bytesize = encoder.table.bytesize
+    before_maximum = encoder.table.maximum
+
+    fields = [
+      HPack::HeaderField.new("x-ok", "2", indexing: HPack::Indexing::ALWAYS),
+      HPack::HeaderField.new("x-failure", "3"),
+    ]
+
+    expect_raises(Exception, "forced policy failure") do
+      encoder.encode(fields) do |name, _value|
+        raise "forced policy failure" if name == "x-failure"
+        nil
+      end
+    end
+
+    encoder.table.to_a.should eq before
+    encoder.table.bytesize.should eq before_bytesize
+    encoder.table.maximum.should eq before_maximum
+
+    # Lookups must stay coherent after rollback: re-encoding the seeded
+    # header must still resolve to a dynamic-table hit (Indexing::INDEXED),
+    # not fall back to a literal, and the encoder/decoder tables must agree.
+    encoded = encoder.encode([{"x-seed", "1"}])
+    decoded = decoder.decode_with_metadata(encoded)
+    decoded[:headers].should eq HTTP::Headers{"x-seed" => "1"}
+    decoded[:fields].map(&.indexing).should eq [HPack::Indexing::INDEXED]
+    encoder.table.to_a.should eq decoder.table.to_a
+  end
+
+  it "restores table state when a transaction's own insertion is evicted before it fails" do
+    # maximum: 100 bytes. "x-seed"/"1" costs 6+1+32 = 39.
+    encoder = HPack::Encoder.new(max_table_size: 100)
+    decoder = HPack::Decoder.new(100)
+
+    seed_bytes = encoder.encode([
+      HPack::HeaderField.new("x-seed", "1", indexing: HPack::Indexing::ALWAYS),
+    ])
+    decoder.decode(seed_bytes)
+    before = encoder.table.to_a
+    before_bytesize = encoder.table.bytesize
+    before_maximum = encoder.table.maximum
+
+    # Each of x-a/x-b/x-c costs 3+10+32 = 45. Inserting all three (plus the
+    # 39-byte seed) overflows the 100-byte maximum enough that eviction must
+    # consume the seed AND the transaction's own first insertion (x-a)
+    # before the transaction fails on the fourth field.
+    fields = [
+      HPack::HeaderField.new("x-a", "1111111111", indexing: HPack::Indexing::ALWAYS),
+      HPack::HeaderField.new("x-b", "2222222222", indexing: HPack::Indexing::ALWAYS),
+      HPack::HeaderField.new("x-c", "3333333333", indexing: HPack::Indexing::ALWAYS),
+      HPack::HeaderField.new("x-failure", "value"),
+    ]
+
+    expect_raises(Exception, "forced policy failure") do
+      encoder.encode(fields) do |name, _value|
+        raise "forced policy failure" if name == "x-failure"
+        nil
+      end
+    end
+
+    encoder.table.to_a.should eq before
+    encoder.table.bytesize.should eq before_bytesize
+    encoder.table.maximum.should eq before_maximum
+
+    encoded = encoder.encode([{"x-seed", "1"}])
+    decoded = decoder.decode_with_metadata(encoded)
+    decoded[:fields].map(&.indexing).should eq [HPack::Indexing::INDEXED]
+    encoder.table.to_a.should eq decoder.table.to_a
+  end
 end

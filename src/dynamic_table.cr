@@ -17,8 +17,24 @@ module HPack
     @entry_seq = Hash(Tuple(String, String), UInt64).new
     @name_seq = Hash(String, UInt64).new
 
+    # Invoked once per entry evicted by `cleanup`, in oldest-to-newest
+    # eviction order. Set only during a transactional encode (see
+    # `Encoder#with_writer`); used to journal evictions for rollback
+    # instead of snapshotting the whole table up front.
+    property eviction_listener : Proc(Tuple(String, String), Nil)?
+
     def initialize(@maximum = 4096)
       super()
+    end
+
+    # Current insertion sequence counter. Exposed only for transactional
+    # rollback: some insertions made during a failed transaction may have
+    # already been evicted (and are therefore invisible to `drop_newest`),
+    # so the counter cannot always be recovered purely by counting
+    # `drop_newest` calls; rollback instead restores it directly from a
+    # value captured at transaction start.
+    def insert_count : UInt64
+      @insert_count
     end
 
     def add(name, value)
@@ -83,7 +99,36 @@ module HPack
         @bytesize -= count(header)
         @entry_seq.delete(header) if @entry_seq[header]? == evicted_seq
         @name_seq.delete(header[0]) if @name_seq[header[0]]? == evicted_seq
+        @eviction_listener.try &.call(header)
       end
+    end
+
+    # Removes the newest entry. Used only to undo an insertion that is
+    # still present in the table during transactional rollback (an
+    # insertion evicted earlier in the same transaction is instead simply
+    # absent from the journal replay — see `Encoder#rollback_table`).
+    def drop_newest : Nil
+      header = shift
+      @bytesize -= count(header)
+      @insert_count -= 1
+    end
+
+    # Re-inserts a previously evicted entry at the old (oldest) end,
+    # restoring original order relative to whatever survived the
+    # transaction. Does not touch `@insert_count` or the hash indexes:
+    # the entry regains a coherent seq only once `rebuild_index` recomputes
+    # every entry's seq from its restored position and the (separately
+    # restored) insertion counter.
+    def restore_evicted(header : Tuple(String, String)) : Nil
+      push header
+      @bytesize += count(header)
+    end
+
+    # Directly restores the insertion sequence counter to a previously
+    # captured value. See `#insert_count` for why this can't always be
+    # derived from counting `drop_newest` calls.
+    def restore_insert_count(value : UInt64) : Nil
+      @insert_count = value
     end
 
     @[AlwaysInline]
