@@ -11,4 +11,4 @@ license: "Apache 2.0"
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
-    version: ~> 1.6.4
+    commit: 34a3de4598aa009c878a1812bb018f0deaf15126
