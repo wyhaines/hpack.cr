@@ -50,11 +50,22 @@ module HPack
 
     # Huffman-encodes *string* into *dest*, starting at offset 0.
     #
-    # Writes exactly `(bit_length + 7) // 8` bytes, where *bit_length* is
-    # the caller-supplied bit length previously obtained from
-    # `#encoded_bit_length` for the same string, and returns that byte
-    # count. *dest* must be at least that many bytes long; the caller (the
-    # `Encoder`'s scratch buffer, in the common case) owns sizing it.
+    # *bit_length* must equal `encoded_bit_length(string)` for this same
+    # *string* — it is trusted as a sizing hint, not re-derived, so the
+    # single sizing walk stays in the caller. That equality is verified as
+    # writes happen, not merely assumed: every store into *dest* is bounds
+    # checked against `dest.size` (raising `HPack::Error` rather than
+    # corrupting memory through the unsafe pointer this method writes
+    # through if *bit_length* understates the true length), and once the
+    # string has been fully walked, the number of bytes actually written is
+    # compared against the `(bit_length + 7) // 8` byte count the caller
+    # implied; a mismatch (understated *or* overstated *bit_length*) raises
+    # `HPack::Error` instead of silently returning a byte count that
+    # includes stale, previously-written `dest` contents.
+    #
+    # On success, writes exactly `(bit_length + 7) // 8` bytes and returns
+    # that count. *dest* must be at least that many bytes long; the caller
+    # (the `Encoder`'s scratch buffer, in the common case) owns sizing it.
     def encode(string : String, dest : Bytes, bit_length : Int64) : Int32
       byte_count = encoded_size(bit_length)
       if dest.size < byte_count
@@ -73,6 +84,7 @@ module HPack
 
         while pending_bits >= 8
           pending_bits -= 8
+          raise Error.new("huffman bit_length does not match string's actual encoded length") if output_index >= dest.size
           out[output_index] = (accumulator >> pending_bits).to_u8!
           output_index += 1
         end
@@ -80,7 +92,13 @@ module HPack
 
       if pending_bits > 0
         padding_bits = 8_u8 - pending_bits
+        raise Error.new("huffman bit_length does not match string's actual encoded length") if output_index >= dest.size
         out[output_index] = ((accumulator << padding_bits) | (0xff_u64 >> pending_bits)).to_u8!
+        output_index += 1
+      end
+
+      unless output_index == byte_count
+        raise Error.new("huffman bit_length does not match string's actual encoded length")
       end
 
       byte_count
@@ -127,7 +145,14 @@ module HPack
       end
     end
 
-    private def encoded_size(bit_length : Int64) : Int32
+    # Returns the byte size needed to Huffman-encode a string whose encoded
+    # bit length is *bit_length* (as returned by `#encoded_bit_length`).
+    #
+    # Raises `HPack::Error` if the encoded result cannot fit in a Crystal
+    # `Bytes` value. Public so callers that already have a bit length in
+    # hand (notably `Encoder#string`) can compute the byte size without
+    # duplicating this arithmetic.
+    def encoded_size(bit_length : Int64) : Int32
       byte_size = (bit_length + 7) // 8
       if byte_size > Int32::MAX
         raise Error.new("Huffman output exceeds maximum slice size")

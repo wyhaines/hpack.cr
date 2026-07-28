@@ -185,6 +185,26 @@ describe HPack::Huffman do
       end
     end
 
+    it "raises rather than corrupting memory when bit_length understates the actual encoded length, even with a roomy destination" do
+      input = "www.example.com"
+      roomy = Bytes.new(64) # far larger than the ~12 bytes this string actually needs
+
+      expect_raises(HPack::Error) do
+        HPack.huffman.encode(input, roomy, 0_i64)
+      end
+    end
+
+    it "raises rather than returning stale trailing bytes when bit_length overstates the actual encoded length" do
+      input = "www.example.com"
+      true_bit_length = HPack.huffman.encoded_bit_length(input)
+      overstated_bit_length = true_bit_length + 64 # 8 bytes further than truth
+      dest = Bytes.new(HPack.huffman.encoded_size(overstated_bit_length))
+
+      expect_raises(HPack::Error) do
+        HPack.huffman.encode(input, dest, overstated_bit_length)
+      end
+    end
+
     it "matches a bit-at-a-time reference for every symbol at every bit offset" do
       256.times do |value|
         8.times do |prefix_symbols|

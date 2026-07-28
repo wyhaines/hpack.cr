@@ -957,7 +957,7 @@ module HPack
       end
 
       bits = HPack.huffman.encoded_bit_length(string)
-      size = ((bits + 7) // 8).to_i32
+      size = HPack.huffman.encoded_size(bits)
       if huffman.smaller? && size >= string.bytesize
         integer(string.bytesize, 7)
         writer << string
