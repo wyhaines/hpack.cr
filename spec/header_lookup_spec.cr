@@ -168,6 +168,19 @@ describe "HPack::Encoder header lookup" do
     })
   end
 
+  it "finds an exact dynamic match deeper than the linear-scan window" do
+    encoder = HPack::Encoder.new
+    20.times { |i| encoder.table.add("x-depth-#{i}", "value-#{i}") }
+
+    # "x-depth-0" is the oldest entry (added first, unshifted to the back),
+    # far beyond any reasonable scan-window size; this exercises the hash
+    # index fallback path rather than the newest-entries linear scan.
+    encoder.lookup_for_spec("x-depth-0", "value-0").should eq({
+      HPack::STATIC_TABLE_SIZE + 20,
+      "value-0",
+    })
+  end
+
   it "tracks dynamic lookup through eviction, clear, and resize" do
     encoder = HPack::Encoder.new(max_table_size: 108)
     encoder.table.add("a", "one")

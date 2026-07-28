@@ -819,8 +819,44 @@ module HPack
       {% end %}
     end
 
+    # Below this many newest entries, comparing names directly (which
+    # short-circuits in O(1) on a bytesize mismatch) beats the hash
+    # indexes' O(1)-but-unconditional cost of hashing every byte of a
+    # possibly-long name/value (Crystal's String#hash is uncached). Beyond
+    # the window, the hash indexes take over, which is where the old
+    # linear scan's true O(n) cost lived. K=8 was chosen by a paired
+    # before/after benchmark: it recovers the 9-field end-to-end fixture's
+    # regression while keeping the deep-entry/miss wins from the hash
+    # indexes (see task-4 report for the measurements).
+    private SCAN_WINDOW = 8
+
     protected def indexed(name : String, value : String)
       static_entry = static_indexed(name, value)
+
+      scan_name_index = nil
+      table.each_with_index do |header, index|
+        break if index >= SCAN_WINDOW
+
+        next unless header[0] == name
+
+        dynamic_index = index + STATIC_TABLE_SIZE + 1
+        return {dynamic_index, header[1]} if header[1] == value
+
+        # A name match without an exact value hit: this is the newest
+        # name-only candidate (scan runs newest -> oldest), so there is
+        # nothing more useful the rest of the window can tell us here. A
+        # same-named entry further back that DOES match the value exactly
+        # is still found correctly by the `find_index` hash lookup below,
+        # regardless of position, so stopping here only skips wasted
+        # comparisons; it does not skip a possible correct answer. This
+        # matters for a repeated header name whose value changes on every
+        # call (e.g. "date", "etag"): without it, every lookup would scan
+        # the full window on a guaranteed miss.
+        unless static_entry
+          scan_name_index = dynamic_index
+          break
+        end
+      end
 
       if rel = table.find_index(name, value)
         return {rel + STATIC_TABLE_SIZE, value}
@@ -828,6 +864,8 @@ module HPack
 
       if static_entry
         {static_entry[0], nil}
+      elsif scan_name_index
+        {scan_name_index, nil}
       elsif rel = table.find_name_index(name)
         {rel + STATIC_TABLE_SIZE, nil}
       end
