@@ -838,31 +838,8 @@ module HPack
       end
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
     protected def integer(integer : Int32, n, prefix = 0_u8)
-      # For this small set of results, a case statement is vastly faster than doing math.
-      n2 = case n
-           when 0
-             0
-           when 1
-             1
-           when 2
-             3
-           when 3
-             7
-           when 4
-             15
-           when 5
-             31
-           when 6
-             63
-           when 7
-             127
-           else
-             # I don't think this will ever get called.
-             2 ** n - 1
-           end
-
+      n2 = (1 << n) - 1
       if integer < n2
         writer.write_byte(integer.to_u8 | prefix.to_u8)
         return
@@ -872,8 +849,8 @@ module HPack
       integer -= n2
 
       while integer >= 128
-        writer.write_byte(((integer % 128) + 128).to_u8)
-        integer //= 128
+        writer.write_byte(((integer & 0x7f) | 0x80).to_u8)
+        integer >>= 7
       end
 
       writer.write_byte(integer.to_u8)
