@@ -1,23 +1,22 @@
 require "./spec_helper"
 
 module EncoderTableSizeSpec
+  # The encoder now copies its completed internal buffer out to the target
+  # `IO` in exactly one `#write` call per block, so there is no longer a
+  # meaningful notion of failing on the Nth write within a block: this
+  # writer always fails on its (single) call, capturing whatever full block
+  # was handed to it first so tests can confirm it was the complete,
+  # unfragmented block rather than a partial write.
   class FailingWriter < IO
     getter output = IO::Memory.new
-
-    def initialize(@fail_on_write : Int32)
-      @write_count = 0
-    end
 
     def read(slice : Bytes) : Int32
       0
     end
 
     def write(slice : Bytes) : Nil
-      @write_count += 1
       output.write(slice)
-      if @write_count == @fail_on_write
-        raise IO::Error.new("forced writer failure")
-      end
+      raise IO::Error.new("forced writer failure")
     end
   end
 
@@ -259,18 +258,21 @@ describe HPack::Encoder do
       output.to_slice.should eq Bytes[0x20]
     end
 
-    it "prefixes headers and runs policy callbacks after the update" do
+    it "prefixes headers after the update, without exposing output mid-encode" do
       encoder = HPack::Encoder.new
       output = IO::Memory.new
-      saw_update = false
+      output_during_callback = nil
       encoder.resize_table(0)
 
       encoder.encode_into([{"x", "y"}], output) do |_name, _value|
-        saw_update = output.to_slice == Bytes[0x20]
+        # Encoding happens into an internal buffer and is copied to *output*
+        # only once, after the whole block succeeds — the policy callback,
+        # which runs mid-encode, must not see any of it yet.
+        output_during_callback = output.to_slice.dup
         nil
       end
 
-      saw_update.should be_true
+      output_during_callback.should eq Bytes.empty
       output.to_slice.should eq Bytes[
         0x20,
         0x00, 0x01, 0x78, 0x01, 0x79,
@@ -354,22 +356,24 @@ describe HPack::Encoder do
       encoder.encode([] of Tuple(String, String)).should eq Bytes[0x3f, 0x21]
     end
 
-    it "retains the complete update after a writer fails during its prefix" do
+    it "retains the complete update after a writer fails during delivery" do
       encoder = HPack::Encoder.new
-      writer = EncoderTableSizeSpec::FailingWriter.new(1)
+      writer = EncoderTableSizeSpec::FailingWriter.new
       encoder.resize_table(63)
 
       expect_raises(IO::Error, "forced writer failure") do
         encoder.encode_into([] of Tuple(String, String), writer)
       end
 
-      writer.output.to_slice.should eq Bytes[0x3f]
+      # The writer receives the complete resize-prefix block (not a
+      # fragment) before its single `#write` call raises.
+      writer.output.to_slice.should eq Bytes[0x3f, 0x20]
       encoder.encode([] of Tuple(String, String)).should eq Bytes[0x3f, 0x20]
     end
 
     it "retains pending state and rolls back insertion after a writer failure" do
       encoder = HPack::Encoder.new(max_table_size: 128)
-      writer = EncoderTableSizeSpec::FailingWriter.new(3)
+      writer = EncoderTableSizeSpec::FailingWriter.new
       encoder.resize_table(63)
 
       expect_raises(IO::Error, "forced writer failure") do
@@ -385,7 +389,14 @@ describe HPack::Encoder do
         )
       end
 
-      writer.output.to_slice.should eq Bytes[0x3f, 0x20, 0x40]
+      # The writer receives the complete block (resize prefix + field),
+      # not a fragment, before its single `#write` call raises.
+      writer.output.to_slice.should eq Bytes[
+        0x3f, 0x20,
+        0x40, 0x07, 'x'.ord.to_u8, '-'.ord.to_u8, 'a'.ord.to_u8, 'd'.ord.to_u8,
+        'd'.ord.to_u8, 'e'.ord.to_u8, 'd'.ord.to_u8,
+        0x05, 'v'.ord.to_u8, 'a'.ord.to_u8, 'l'.ord.to_u8, 'u'.ord.to_u8, 'e'.ord.to_u8,
+      ]
       encoder.table.should be_empty
       encoder.table.bytesize.should eq 0
       encoder.table.maximum.should eq 63

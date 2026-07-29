@@ -32,7 +32,13 @@ module HPack
   # )
   # ```
   class Encoder
-    private getter writer : IO
+    # Always `@buffer` at rest (the writer only ever "points elsewhere"
+    # transiently inside `with_writer`, which itself always repoints it right
+    # back to `@buffer` before yielding). Typing this as the concrete
+    # `IO::Memory` rather than the abstract `IO` lets every `write_byte`/`<<`/
+    # `write` call in the `integer`/`string`/`encode_field` hot paths
+    # devirtualize at compile time instead of dispatching through `IO`.
+    private getter writer : IO::Memory
     @buffer : IO::Memory
     @pseudo_headers : Array(Tuple(String, Array(String)))
     @regular_headers : Array(Tuple(String, Array(String)))
@@ -115,7 +121,9 @@ module HPack
     # insertion order. The returned bytes remain valid after later calls.
     #
     # The `_writer` argument is retained for compatibility. New code that owns
-    # its output buffer should use `#encode_into`.
+    # its output buffer should use `#encode_into`. When `_writer` is given,
+    # the returned slice is always a fresh copy: it never aliases `_writer`'s
+    # own buffer, so mutating one afterward cannot affect the other.
     def encode(
       headers : HTTP::Headers,
       indexing = default_indexing,
@@ -124,14 +132,13 @@ module HPack
     ) : Bytes
       if output = _writer
         encode_into(headers, output, indexing, huffman)
-        return output.to_slice
+        return output.to_slice.dup
       end
 
       {% begin %}
       {% if flag?(:preview_mt) %}
       @mutex.synchronize do
       {% end %}
-      @buffer.clear
       with_writer(@buffer, indexing == Indexing::ALWAYS) do
         encode_headers(headers, indexing, huffman, false) { nil }
       end
@@ -165,7 +172,6 @@ module HPack
       @mutex.synchronize do
       {% end %}
       validate_indexing(indexing)
-      @buffer.clear
       with_writer(@buffer, true) do
         encode_headers(headers, indexing, huffman, true) do |name, value|
           yield name, value
@@ -193,7 +199,6 @@ module HPack
       {% if flag?(:preview_mt) %}
       @mutex.synchronize do
       {% end %}
-      @buffer.clear
       with_writer(@buffer, indexing == Indexing::ALWAYS) do
         encode_tuple_fields(fields, indexing, huffman, false) { nil }
       end
@@ -219,7 +224,6 @@ module HPack
       @mutex.synchronize do
       {% end %}
       validate_indexing(indexing)
-      @buffer.clear
       with_writer(@buffer, true) do
         encode_tuple_fields(fields, indexing, huffman, true) do |name, value|
           yield name, value
@@ -243,7 +247,6 @@ module HPack
       @mutex.synchronize do
       {% end %}
       validate_indexing(indexing)
-      @buffer.clear
       with_writer(@buffer, true) do
         encode_header_fields(fields, indexing, huffman) { nil }
       end
@@ -269,7 +272,6 @@ module HPack
       @mutex.synchronize do
       {% end %}
       validate_indexing(indexing)
-      @buffer.clear
       with_writer(@buffer, true) do
         encode_header_fields(fields, indexing, huffman) do |name, value|
           yield name, value
@@ -295,7 +297,6 @@ module HPack
       {% if flag?(:preview_mt) %}
       @mutex.synchronize do
       {% end %}
-      @buffer.clear
       with_writer(@buffer, true) do
         encode_decoded_fields(fields, huffman)
       end
@@ -310,6 +311,10 @@ module HPack
     #
     # Existing output is not cleared. Pseudo-headers are emitted before regular
     # headers regardless of insertion order.
+    #
+    # The block is encoded into an internal buffer first and copied to
+    # *output* in one write, only after encoding completes successfully. A
+    # failure partway through never leaves a partial block in *output*.
     def encode_into(
       headers : HTTP::Headers,
       output : IO,
@@ -334,6 +339,10 @@ module HPack
     #
     # Existing output is not cleared. The policy is evaluated once per field
     # after name normalization and pseudo-header ordering.
+    #
+    # The block is encoded into an internal buffer first and copied to
+    # *output* in one write, only after encoding completes successfully. A
+    # failure partway through never leaves a partial block in *output*.
     def encode_into(
       headers : HTTP::Headers,
       output : IO,
@@ -363,6 +372,10 @@ module HPack
     # Existing output is not cleared, duplicate names are preserved, and fields
     # are emitted in the supplied order. Callers must place every pseudo-header
     # before regular fields.
+    #
+    # The block is encoded into an internal buffer first and copied to
+    # *output* in one write, only after encoding completes successfully. A
+    # failure partway through never leaves a partial block in *output*.
     def encode_into(
       fields : Enumerable(Tuple(String, String)),
       output : IO,
@@ -384,6 +397,10 @@ module HPack
     end
 
     # Appends policy-driven ordered tuple *fields* to *output*.
+    #
+    # The block is encoded into an internal buffer first and copied to
+    # *output* in one write, only after encoding completes successfully. A
+    # failure partway through never leaves a partial block in *output*.
     def encode_into(
       fields : Enumerable(Tuple(String, String)),
       output : IO,
@@ -409,6 +426,10 @@ module HPack
     end
 
     # Appends ordered fields with optional per-field overrides to *output*.
+    #
+    # The block is encoded into an internal buffer first and copied to
+    # *output* in one write, only after encoding completes successfully. A
+    # failure partway through never leaves a partial block in *output*.
     def encode_into(
       fields : Enumerable(HeaderField),
       output : IO,
@@ -431,6 +452,10 @@ module HPack
     end
 
     # Appends ordered fields using explicit options and a policy block.
+    #
+    # The block is encoded into an internal buffer first and copied to
+    # *output* in one write, only after encoding completes successfully. A
+    # failure partway through never leaves a partial block in *output*.
     def encode_into(
       fields : Enumerable(HeaderField),
       output : IO,
@@ -456,6 +481,10 @@ module HPack
     end
 
     # Appends decoded fields while preserving every indexing marker.
+    #
+    # The block is encoded into an internal buffer first and copied to
+    # *output* in one write, only after encoding completes successfully. A
+    # failure partway through never leaves a partial block in *output*.
     def encode_into(
       fields : Enumerable(DecodedHeader),
       output : IO,
@@ -477,8 +506,9 @@ module HPack
     end
 
     private def with_writer(output : IO, transactional : Bool, &)
+      @buffer.clear
       previous_writer = @writer
-      @writer = output
+      @writer = @buffer
       completed = false
       if transactional
         @table_transaction_active = true
@@ -499,6 +529,15 @@ module HPack
       begin
         emit_pending_table_size_updates
         yield
+        # Copy out only after encoding succeeds, and only once: `output`
+        # never observes a partial block. `completed` stays `false` (so
+        # `rollback_table` still runs below) if this write itself raises,
+        # e.g. because `output` is a closed stream — a block that never
+        # reached the peer must not be treated as committed against the
+        # local table either. When `output` already *is* `@buffer` (the
+        # `encode(...) : Bytes` overloads hand `@buffer` itself in as the
+        # target), the bytes are already in place and no copy is needed.
+        output.write(@buffer.to_slice) unless output.same?(@buffer)
         completed = true
       ensure
         rollback_table if transactional && !completed

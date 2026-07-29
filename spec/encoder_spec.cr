@@ -199,6 +199,33 @@ describe HPack::Encoder do
     ).to_slice
   end
 
+  it "leaves the target IO untouched when encode_into fails mid-block" do
+    output = IO::Memory.new
+    output.write_byte(0xaa) # preexisting content must survive untouched
+
+    fields = [
+      HPack::HeaderField.new(
+        "x-ok",
+        "value",
+        indexing: HPack::Indexing::ALWAYS
+      ),
+      HPack::HeaderField.new("x-failure", "value"),
+    ]
+
+    expect_raises(Exception, "forced policy failure") do
+      encoder.encode_into(fields, output) do |name, _value|
+        raise "forced policy failure" if name == "x-failure"
+        nil
+      end
+    end
+
+    # Encoding happens into an internal buffer first and is copied to
+    # *output* in one write only after the whole block succeeds, so a
+    # failure partway through (here, the second field's policy callback)
+    # never reaches *output* at all: not even the first field's bytes.
+    output.to_slice.should eq UInt8.static_array(0xaa).to_slice
+  end
+
   it "clears adapter scratch state and restores its writer when encode_into raises" do
     external_writer = IO::Memory.new
     external_writer.close

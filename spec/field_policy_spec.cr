@@ -443,7 +443,11 @@ describe "per-field encoding policies" do
       )
     end
 
-    writer.output.to_slice.should eq Bytes[0x40]
+    # `writer#write` is called exactly once, with the complete encoded
+    # block, before it raises: a delivery failure never exposes a partial
+    # block, only the whole thing or nothing.
+    round_trip = HPack::Decoder.new
+    round_trip.decode(writer.output.to_slice).should eq HTTP::Headers{"x-lost" => "value"}
     encoder.table.to_a.should eq expected_table
     encoder.table.bytesize.should eq expected_bytesize
 
