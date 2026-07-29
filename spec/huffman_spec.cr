@@ -240,13 +240,19 @@ describe HPack::Huffman do
       HPack.huffman.decode(Bytes[0x25, 0xa8, 0x49, 0xe9, 0x5b, 0xb8, 0xe8, 0xb4, 0xbf]).should eq "custom-value"
     end
 
-    it "writes decoded bytes to a caller-owned buffer" do
-      output = IO::Memory.new
-      output << "prefix:"
+    it "writes decoded bytes into a caller-owned buffer via the pointer sink" do
+      dest = Bytes.new(8, 0xaa_u8)
 
-      HPack.huffman.decode(Bytes[0xfe_u8, 0x3f_u8], output)
+      n = HPack.huffman.decode(Bytes[0xfe_u8, 0x3f_u8], dest)
 
-      output.to_s.should eq "prefix:!"
+      n.should eq 1
+      dest[0, n].should eq "!".to_slice
+    end
+
+    it "returns -1 when the destination is too small for the decoded output" do
+      encoded = HPack.huffman.encode("!")
+
+      HPack.huffman.decode(encoded, Bytes.new(0)).should eq(-1)
     end
 
     it "decodes a symbol that does not finish in the first byte" do

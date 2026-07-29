@@ -1,21 +1,10 @@
 require "./error"
 require "./huffman/decode_table"
 
-class Fiber
-  # :nodoc:
-  property hpack_huffman_decode_output : IO::Memory?
-end
-
 module HPack
   class Huffman
     private getter table : Slice({UInt8, UInt32, UInt8})
     private getter decode_table : Slice(DecodeTransition)
-
-    private class DecodeScratch
-      def self.output : IO::Memory
-        Fiber.current.hpack_huffman_decode_output ||= IO::Memory.new
-      end
-    end
 
     def initialize(table)
       unless table.size == 256
@@ -112,25 +101,35 @@ module HPack
       bytes
     end
 
-    def decode(bytes : Bytes) : String
-      output = DecodeScratch.output
-      output.clear
-      decode(bytes, output)
-      output.to_s
-    end
-
-    # Decodes *bytes* and appends the result to *output*.
+    # Huffman-decodes *bytes* into *dest*, starting at offset 0, writing
+    # through a raw pointer rather than a virtual `IO#write_byte` sink.
     #
-    # This method does not clear or rewind *output*. The caller owns and
-    # controls the output buffer.
-    def decode(bytes : Bytes, output : IO) : Nil
+    # Returns the number of bytes written. Returns `-1` if *dest* is too
+    # small to hold the fully decoded output; callers that enforce a decoded
+    # size cap (`Decoder#max_decoded_string_size`) treat that return value as
+    # a size-violation rather than retrying with a larger buffer. Raises
+    # `HPack::Error` on invalid Huffman padding or an encoded EOS symbol, same
+    # as the `String`-returning overload below.
+    def decode(bytes : Bytes, dest : Bytes) : Int32
       transition = DecodeTransition.new(0_u16, NO_VALUE, NO_VALUE, ACCEPTING)
+      out = dest.to_unsafe
+      cap = dest.size
+      n = 0
 
       bytes.each do |byte|
         transition = decode_table[transition.next_state.to_i * 256 + byte]
 
-        output.write_byte(transition.first_value.to_u8) unless transition.first_value == NO_VALUE
-        output.write_byte(transition.second_value.to_u8) unless transition.second_value == NO_VALUE
+        unless transition.first_value == NO_VALUE
+          return -1 if n >= cap
+          out[n] = transition.first_value.to_u8
+          n += 1
+        end
+
+        unless transition.second_value == NO_VALUE
+          return -1 if n >= cap
+          out[n] = transition.second_value.to_u8
+          n += 1
+        end
 
         raise Error.new("node is nil!") if transition.invalid?
       end
@@ -143,6 +142,21 @@ module HPack
 
         raise Error.new("huffman string padding must use MSB of EOS symbol")
       end
+
+      n
+    end
+
+    # Huffman-decodes *bytes* and returns a freshly allocated `String`.
+    #
+    # Allocates a local destination buffer sized to the maximum possible
+    # decoded output (Huffman codes are at least 5 bits, so decoded output
+    # never exceeds `bytes.size * 8 // 5 + 1` bytes); no shared or
+    # fiber-cached scratch buffer is used.
+    def decode(bytes : Bytes) : String
+      dest = Bytes.new(bytes.size * 8 // 5 + 1)
+      n = decode(bytes, dest)
+      raise Error.new("huffman decode overflow") if n < 0 # cannot happen: dest is sized to the maximum possible output
+      String.new(dest[0, n])
     end
 
     # Returns the byte size needed to Huffman-encode a string whose encoded

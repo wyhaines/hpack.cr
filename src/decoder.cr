@@ -49,16 +49,18 @@ module HPack
     getter max_decoded_string_size : Int32?
 
     @required_table_size_update : Int32?
-    @bounded_huffman_output : BoundedOutput?
+
+    # Reusable scratch buffer for Huffman-decoded string output. Grows
+    # (doubling via `Math.pw2ceil`) as needed and is never shrunk.
+    @string_scratch : Bytes
 
     def initialize(max_table_size = 4096, max_decoded_string_size : Int? = nil)
       @max_table_size = normalize_table_size(max_table_size)
       @max_decoded_string_size =
         normalize_decoded_string_size(max_decoded_string_size)
       @table = DynamicTable.new(@max_table_size)
-      @huffman_output = IO::Memory.new
       @required_table_size_update = nil
-      @bounded_huffman_output = nil
+      @string_scratch = Bytes.new(256)
     end
 
     # Changes the protocol limit for dynamic-table size updates.
@@ -367,15 +369,7 @@ module HPack
       bytes = reader.read(length)
 
       if huffman
-        @huffman_output.clear
-        if cap = @max_decoded_string_size
-          bounded = @bounded_huffman_output ||= BoundedOutput.new(@huffman_output)
-          bounded.remaining = cap
-          HPack.huffman.decode(bytes, bounded)
-        else
-          HPack.huffman.decode(bytes, @huffman_output)
-        end
-        @huffman_output.to_s
+        huffman_string(bytes)
       else
         if (cap = @max_decoded_string_size) && length > cap
           raise ResourceLimitError.new(
@@ -386,30 +380,33 @@ module HPack
       end
     end
 
-    # :nodoc:
+    # Huffman-decodes *encoded* into the reusable `@string_scratch` buffer,
+    # growing it (by doubling via `Math.pw2ceil`) only when it is too small.
     #
-    # Enforces the decoded-string cap while Huffman output is emitted, so an
-    # expanding literal fails before unbounded output is allocated.
-    private class BoundedOutput < IO
-      property remaining : Int32 = 0
+    # When `max_decoded_string_size` is configured, the destination is sized
+    # to `cap + 1` at most (rather than the full worst-case bound), so an
+    # expanding literal is stopped at roughly the configured cap instead of
+    # allocating scratch space for the entire decoded output; the `+ 1`
+    # keeps a decoded length of exactly `cap + 1` bytes distinguishable from
+    # one that fits, since `Huffman#decode` only returns `-1` once *dest*
+    # itself is too small to hold another byte.
+    private def huffman_string(encoded : Bytes) : String
+      cap = @max_decoded_string_size
+      bound = encoded.size * 8 // 5 + 1
+      bound = Math.min(bound, cap + 1) if cap
 
-      def initialize(@io : IO::Memory)
+      if @string_scratch.size < bound
+        @string_scratch = Bytes.new(Math.pw2ceil(bound))
       end
 
-      def read(slice : Bytes) : Int32
-        raise NotImplementedError.new("BoundedOutput#read")
+      n = HPack.huffman.decode(encoded, @string_scratch[0, bound])
+      if n < 0 || (cap && n > cap)
+        raise ResourceLimitError.new(
+          "decoded string exceeds the configured cap (#{cap})"
+        )
       end
 
-      def write(slice : Bytes) : Nil
-        return if slice.empty?
-        if slice.size > @remaining
-          raise ResourceLimitError.new(
-            "decoded string exceeds the configured cap (#{@remaining} bytes remaining)"
-          )
-        end
-        @remaining -= slice.size
-        @io.write(slice)
-      end
+      String.new(@string_scratch[0, n])
     end
   end
 end
