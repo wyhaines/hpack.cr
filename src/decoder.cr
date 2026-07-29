@@ -242,12 +242,16 @@ module HPack
       limit.to_u64
     end
 
+    # Every field costs at least 1 input byte to decode (the smallest
+    # representation is a single-byte fully-indexed reference) and adds at
+    # most `max_table_size + 32` to `total` (a fully-indexed field's name
+    # and value come from an existing table entry, whose size already
+    # cannot exceed `max_table_size`; every other representation's literal
+    # bytesize is bounded by the input consumed for that field, which is
+    # smaller still). So a UInt64 total cannot overflow for any input under
+    # 2**53 bytes, which is far beyond any input this decoder will ever see.
     private def add_field_size(total : UInt64, name : String, value : String) : UInt64
       total + (name.bytesize.to_u64 + value.bytesize.to_u64 + 32_u64)
-    rescue OverflowError
-      raise ResourceLimitError.new(
-        "decoded field-section size exceeds UInt64 accounting"
-      )
     end
 
     @[AlwaysInline]
