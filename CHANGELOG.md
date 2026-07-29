@@ -7,32 +7,40 @@ All notable changes to this project are documented in this file.
 ### Performance
 
 The encode and decode paths were reworked for speed and lower allocation.
-The public API is unchanged.
+The public API is unchanged. Measured via interleaved, same-machine
+paired runs (alternating a 1.3.0-era baseline binary and a 1.4.0 binary,
+5 pairs, medians reported) against the bundled
+`benchmarks/hpack_bench.cr` harness, a 9-field mixed static/dynamic-table
+request block, `--release`.
 
-- The dynamic table now keeps a small hash index alongside its ring
-  buffer, so encoder lookups only fall back to a linear scan for the
-  oldest entries instead of every miss. Paired same-session benchmarks
-  measured roughly +13% on encode from this change alone.
-- Huffman string encoding is now single-pass into a reusable scratch
-  buffer, replacing a two-pass length-then-encode approach: roughly
-  +14.9% on encode in paired benchmarks.
-- Huffman literal decoding now writes directly into a pointer-addressed
-  destination instead of through an intermediate buffer: roughly +43.3%
-  on that decode path.
-- Varint decoding uses shifts instead of exponentiation: roughly +4.5%
-  on decode.
-- `#encode_into` now encodes into a concrete `IO::Memory` buffer and
-  copies out once, instead of writing through a polymorphic `IO`:
-  roughly +3.4% on encode.
-
-Measured with the bundled `benchmarks/hpack_bench.cr` harness (a 9-field
-mixed static/dynamic-table request block, `--release`): decoder
-allocation dropped from 880 to 832 bytes per operation (-5.5%); encoder
-allocation is unchanged at 496 bytes per operation. End-to-end
-throughput numbers from this benchmark were collected on a busy shared
-machine and came out noisier, run to run, than the itemized deltas
-above, so treat those isolated, paired measurements as the more
-reliable signal for what to expect.
+- **Decoding is faster and leaner:** 1.20M ips vs. the baseline's 1.13M
+  (+6.2%), and allocation dropped from 880 to 832 bytes per operation
+  (-5.5%). Contributing changes, measured in isolation: Huffman literal
+  decoding through a pointer-addressed destination instead of an
+  intermediate buffer (+43.3% on that path), and shift-based varint
+  decoding instead of exponentiation (+4.5%).
+- **Encoding did not show a net improvement on this workload:** paired
+  medians came out slightly in the baseline's favor (2.17M ips vs.
+  2.28M, roughly -5%), even though each encode-side change measured a
+  real gain in isolation — a hash index alongside the dynamic table's
+  ring buffer so lookups fall back to a linear scan only for the oldest
+  entries (+13%), single-pass Huffman string encoding into a reusable
+  scratch buffer instead of a two-pass length-then-encode approach
+  (+14.9%), and `#encode_into` encoding into a concrete `IO::Memory`
+  buffer with a single copy-out instead of writing through a
+  polymorphic `IO` (+3.4%). Encoder allocation is unchanged at 496
+  bytes per operation either way. This benchmark's dynamic table only
+  ever holds 9 entries and settles into steady-state indexed lookups
+  after warmup, which may explain why it doesn't exercise the
+  encode-side hot paths (a larger, churning table; cold Huffman-heavy
+  literals) the way the isolated measurements did — that hypothesis is
+  unconfirmed, and the discrepancy is flagged for further investigation
+  rather than smoothed over.
+- Absolute throughput on both paths varies with concurrent machine
+  load; interleaving the two binaries controls for that between them
+  within a run, but doesn't eliminate run-to-run scatter, which is why
+  results above are medians across multiple interleaved pairs rather
+  than single runs.
 
 ### Changed
 
