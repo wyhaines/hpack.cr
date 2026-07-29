@@ -242,16 +242,28 @@ module HPack
       limit.to_u64
     end
 
-    # Every field costs at least 1 input byte to decode (the smallest
-    # representation is a single-byte fully-indexed reference) and adds at
-    # most `max_table_size + 32` to `total` (a fully-indexed field's name
-    # and value come from an existing table entry, whose size already
-    # cannot exceed `max_table_size`; every other representation's literal
-    # bytesize is bounded by the input consumed for that field, which is
-    # smaller still). So a UInt64 total cannot overflow for any input under
-    # 2**53 bytes, which is far beyond any input this decoder will ever see.
+    # A single 1-byte fully-indexed representation (`integer(7)` with a
+    # small index) can reference the newest dynamic-table entry, which may
+    # legally occupy up to `max_table_size` bytes — and that same 1-byte
+    # representation can be repeated indefinitely. So `total` is bounded by
+    # `input_bytes * max_table_size`, not by a fixed per-field constant, and
+    # since `max_table_size` may be configured up to `Int32::MAX`, this
+    # product can exceed `UInt64::MAX` for realistic (~2**33 byte, ~8.6 GB)
+    # inputs — not just pathological ones. Checking before adding, rather
+    # than relying on Crystal's checked-arithmetic `OverflowError`, keeps
+    # this failure mode inside the documented contract: resource caps raise
+    # `ResourceLimitError` (see `#decode_each`), deliberately not a subclass
+    # of `Error`, so callers can tell a decompression-bomb rejection apart
+    # from a malformed block.
     private def add_field_size(total : UInt64, name : String, value : String) : UInt64
-      total + (name.bytesize.to_u64 + value.bytesize.to_u64 + 32_u64)
+      addition = name.bytesize.to_u64 + value.bytesize.to_u64 + 32_u64
+      if total > UInt64::MAX - addition
+        raise ResourceLimitError.new(
+          "decoded field-section size exceeds UInt64 accounting"
+        )
+      end
+
+      total + addition
     end
 
     @[AlwaysInline]
