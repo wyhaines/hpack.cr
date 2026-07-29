@@ -595,8 +595,7 @@ module HPack
             nil,
             options,
             indexing,
-            huffman_mode,
-            true
+            huffman_mode
           )
         else
           yield name, value
@@ -624,8 +623,7 @@ module HPack
             nil,
             options,
             indexing,
-            huffman_mode,
-            true
+            huffman_mode
           )
         end
       else
@@ -655,8 +653,7 @@ module HPack
           field.huffman,
           options,
           indexing,
-          huffman_mode,
-          true
+          huffman_mode
         )
       end
     end
@@ -682,14 +679,11 @@ module HPack
       options : FieldOptions?,
       indexing : Indexing,
       huffman : HuffmanMode,
-      validate : Bool,
     )
-      if validate
-        validate_indexing(explicit_indexing) if explicit_indexing
-        if options
-          if option_indexing = options.indexing
-            validate_indexing(option_indexing)
-          end
+      validate_indexing(explicit_indexing) if explicit_indexing
+      if options
+        if option_indexing = options.indexing
+          validate_indexing(option_indexing)
         end
       end
 
