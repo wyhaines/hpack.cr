@@ -1,4 +1,5 @@
 module HPack
+  # :nodoc:
   class SliceReader
     getter offset : Int32
     getter bytes : Bytes

@@ -7,7 +7,11 @@ All notable changes to this project are documented in this file.
 ### Performance
 
 The encode and decode paths were reworked for speed and lower allocation.
-The public API is unchanged. Measured via interleaved, same-machine
+The public API is unchanged, with two narrow exceptions: `Huffman#encoded_bit_length`
+now returns `Int64` (previously `UInt64`), and undocumented internal
+`SliceReader` helpers with no callers in this repo were removed (the
+`read_bytes` endianness family, `default_endianness`, and the
+negative-count branch of `read`). Measured via interleaved, same-machine
 paired runs (alternating a 1.3.0-era baseline binary and a 1.4.0 binary,
 5 pairs, medians reported) against the bundled
 `benchmarks/hpack_bench.cr` harness, a 9-field mixed static/dynamic-table
@@ -44,6 +48,9 @@ request block, `--release`.
 
 ### Changed
 
+- The deprecated `#encode(..., _writer:)` overload now returns an owned
+  copy of the encoded bytes rather than a slice aliasing the writer's
+  buffer.
 - `#encode_into` now fully encodes into an internal buffer before
   copying it to the destination `IO` in a single `write` call. A
   failure partway through encoding leaves the destination untouched.
