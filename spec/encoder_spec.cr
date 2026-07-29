@@ -184,6 +184,17 @@ describe HPack::Encoder do
     bytes.should eq UInt8.static_array(
       0xaa, 0x00, 0x01, 0x78, 0x01, 0x61,
     ).to_slice
+
+    # The returned slice must be an owned copy, not a view aliasing
+    # `output`'s own backing buffer. `IO::Memory#clear` resets `output`'s
+    # size/position without reallocating its buffer, so writing into it
+    # again reuses the exact same backing memory `bytes` would be aliasing
+    # if `.dup` were dropped; if that happened, `bytes[0]` would silently
+    # flip from `0xaa` to `0xff` below.
+    unaffected = bytes.dup
+    output.clear
+    output.write_byte(0xff)
+    bytes.should eq unaffected
   end
 
   it "restores its internal writer after an external writer raises" do

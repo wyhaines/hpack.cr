@@ -312,9 +312,11 @@ module HPack
     # Existing output is not cleared. Pseudo-headers are emitted before regular
     # headers regardless of insertion order.
     #
-    # The block is encoded into an internal buffer first and copied to
-    # *output* in one write, only after encoding completes successfully. A
-    # failure partway through never leaves a partial block in *output*.
+    # The block is encoded into an internal buffer first, so a failure
+    # during encoding leaves *output* untouched. The completed block is then
+    # copied to *output* in a single `write` call; whether that call itself
+    # can partially deliver bytes before raising depends on *output*'s own
+    # semantics, not on the encoder.
     def encode_into(
       headers : HTTP::Headers,
       output : IO,
@@ -340,9 +342,11 @@ module HPack
     # Existing output is not cleared. The policy is evaluated once per field
     # after name normalization and pseudo-header ordering.
     #
-    # The block is encoded into an internal buffer first and copied to
-    # *output* in one write, only after encoding completes successfully. A
-    # failure partway through never leaves a partial block in *output*.
+    # The block is encoded into an internal buffer first, so a failure
+    # during encoding leaves *output* untouched. The completed block is then
+    # copied to *output* in a single `write` call; whether that call itself
+    # can partially deliver bytes before raising depends on *output*'s own
+    # semantics, not on the encoder.
     def encode_into(
       headers : HTTP::Headers,
       output : IO,
@@ -373,9 +377,11 @@ module HPack
     # are emitted in the supplied order. Callers must place every pseudo-header
     # before regular fields.
     #
-    # The block is encoded into an internal buffer first and copied to
-    # *output* in one write, only after encoding completes successfully. A
-    # failure partway through never leaves a partial block in *output*.
+    # The block is encoded into an internal buffer first, so a failure
+    # during encoding leaves *output* untouched. The completed block is then
+    # copied to *output* in a single `write` call; whether that call itself
+    # can partially deliver bytes before raising depends on *output*'s own
+    # semantics, not on the encoder.
     def encode_into(
       fields : Enumerable(Tuple(String, String)),
       output : IO,
@@ -398,9 +404,11 @@ module HPack
 
     # Appends policy-driven ordered tuple *fields* to *output*.
     #
-    # The block is encoded into an internal buffer first and copied to
-    # *output* in one write, only after encoding completes successfully. A
-    # failure partway through never leaves a partial block in *output*.
+    # The block is encoded into an internal buffer first, so a failure
+    # during encoding leaves *output* untouched. The completed block is then
+    # copied to *output* in a single `write` call; whether that call itself
+    # can partially deliver bytes before raising depends on *output*'s own
+    # semantics, not on the encoder.
     def encode_into(
       fields : Enumerable(Tuple(String, String)),
       output : IO,
@@ -427,9 +435,11 @@ module HPack
 
     # Appends ordered fields with optional per-field overrides to *output*.
     #
-    # The block is encoded into an internal buffer first and copied to
-    # *output* in one write, only after encoding completes successfully. A
-    # failure partway through never leaves a partial block in *output*.
+    # The block is encoded into an internal buffer first, so a failure
+    # during encoding leaves *output* untouched. The completed block is then
+    # copied to *output* in a single `write` call; whether that call itself
+    # can partially deliver bytes before raising depends on *output*'s own
+    # semantics, not on the encoder.
     def encode_into(
       fields : Enumerable(HeaderField),
       output : IO,
@@ -453,9 +463,11 @@ module HPack
 
     # Appends ordered fields using explicit options and a policy block.
     #
-    # The block is encoded into an internal buffer first and copied to
-    # *output* in one write, only after encoding completes successfully. A
-    # failure partway through never leaves a partial block in *output*.
+    # The block is encoded into an internal buffer first, so a failure
+    # during encoding leaves *output* untouched. The completed block is then
+    # copied to *output* in a single `write` call; whether that call itself
+    # can partially deliver bytes before raising depends on *output*'s own
+    # semantics, not on the encoder.
     def encode_into(
       fields : Enumerable(HeaderField),
       output : IO,
@@ -482,9 +494,11 @@ module HPack
 
     # Appends decoded fields while preserving every indexing marker.
     #
-    # The block is encoded into an internal buffer first and copied to
-    # *output* in one write, only after encoding completes successfully. A
-    # failure partway through never leaves a partial block in *output*.
+    # The block is encoded into an internal buffer first, so a failure
+    # during encoding leaves *output* untouched. The completed block is then
+    # copied to *output* in a single `write` call; whether that call itself
+    # can partially deliver bytes before raising depends on *output*'s own
+    # semantics, not on the encoder.
     def encode_into(
       fields : Enumerable(DecodedHeader),
       output : IO,
@@ -529,14 +543,18 @@ module HPack
       begin
         emit_pending_table_size_updates
         yield
-        # Copy out only after encoding succeeds, and only once: `output`
-        # never observes a partial block. `completed` stays `false` (so
-        # `rollback_table` still runs below) if this write itself raises,
-        # e.g. because `output` is a closed stream — a block that never
-        # reached the peer must not be treated as committed against the
-        # local table either. When `output` already *is* `@buffer` (the
-        # `encode(...) : Bytes` overloads hand `@buffer` itself in as the
-        # target), the bytes are already in place and no copy is needed.
+        # Copy out only after encoding succeeds, and only once: a failure
+        # during encoding leaves `output` untouched. `completed` stays
+        # `false` (so `rollback_table` still runs below) if this single
+        # write itself raises, e.g. because `output` is a closed stream.
+        # That's the safer default, not a guarantee the peer received
+        # nothing — a real socket's one logical `write` can still deliver
+        # some bytes before raising, and this code has no way to observe
+        # that. All it ensures is that the local table never advances past
+        # a block the encoder couldn't confirm handing off. When `output`
+        # already *is* `@buffer` (the `encode(...) : Bytes` overloads hand
+        # `@buffer` itself in as the target), the bytes are already in
+        # place and no copy is needed.
         output.write(@buffer.to_slice) unless output.same?(@buffer)
         completed = true
       ensure
