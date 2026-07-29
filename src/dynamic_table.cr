@@ -6,6 +6,12 @@ module HPack
   # of data via any methods other than `#add`, `#clear`, `#find_index`, `#find_name_index`,
   # and `#rebuild_index`, as the native `Deque` methods will not keep an accurate tally of
   # the bytesize of the structure nor of the hash indexes used for O(1) lookup.
+  #
+  # `#eviction_listener`, `#drop_newest`, `#restore_evicted`, and
+  # `#restore_insert_count` (each marked `:nodoc:`) are public only because
+  # `Encoder#with_writer`'s transactional rollback is a different class and
+  # needs to call them; they exist solely to support that rollback and are
+  # not part of this class's supported API otherwise.
   class DynamicTable < Deque(Tuple(String, String))
     getter bytesize : Int32 = 0
     property maximum : Int32 = 4096
@@ -17,6 +23,8 @@ module HPack
     @entry_seq = Hash(Tuple(String, String), UInt64).new
     @name_seq = Hash(String, UInt64).new
 
+    # :nodoc:
+    #
     # Invoked once per entry evicted by `cleanup`, in oldest-to-newest
     # eviction order. Set only during a transactional encode (see
     # `Encoder#with_writer`); used to journal evictions for rollback
@@ -103,6 +111,8 @@ module HPack
       end
     end
 
+    # :nodoc:
+    #
     # Removes the newest entry. Used only to undo an insertion that is
     # still present in the table during transactional rollback (an
     # insertion evicted earlier in the same transaction is instead simply
@@ -113,6 +123,8 @@ module HPack
       @insert_count -= 1
     end
 
+    # :nodoc:
+    #
     # Re-inserts a previously evicted entry at the old (oldest) end,
     # restoring original order relative to whatever survived the
     # transaction. Does not touch `@insert_count` or the hash indexes:
@@ -124,6 +136,8 @@ module HPack
       @bytesize += count(header)
     end
 
+    # :nodoc:
+    #
     # Directly restores the insertion sequence counter to a previously
     # captured value. See `#insert_count` for why this can't always be
     # derived from counting `drop_newest` calls.
