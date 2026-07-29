@@ -194,13 +194,14 @@ module HPack
     # dynamic table size updates.
     @[AlwaysInline]
     private def parse_representation : {String, String, Indexing}
-      if reader.current_byte.bit(7) == 1 # 1.......  indexed
+      byte = reader.current_byte
+      if byte.bit(7) == 1 # 1.......  indexed
         _index, name, value = literal_indexed
         {name, value, Indexing::INDEXED}
-      elsif reader.current_byte.bit(6) == 1 # 01......  literal with incremental indexing
+      elsif byte.bit(6) == 1 # 01......  literal with incremental indexing
         _index, name, value = literal_with_incremental_indexing
         {name, value, Indexing::ALWAYS}
-      elsif reader.current_byte.bit(4) == 1 # 0001....  literal never indexed
+      elsif byte.bit(4) == 1 # 0001....  literal never indexed
         _index, name, value = literal_never_indexed
         {name, value, Indexing::NEVER}
       else # 0000....  literal without indexing
@@ -220,7 +221,7 @@ module HPack
     end
 
     private def normalize_decoded_string_size(size : Int?) : Int32?
-      return nil if size.nil?
+      return if size.nil?
       if size < 0 || size > Int32::MAX
         raise ArgumentError.new(
           "decoded string size cap must be between 0 and #{Int32::MAX}: #{size}"
@@ -231,7 +232,7 @@ module HPack
     end
 
     private def normalize_field_section_limit(limit : Int?) : UInt64?
-      return nil if limit.nil?
+      return if limit.nil?
       if limit < 0 || limit > UInt64::MAX
         raise ArgumentError.new(
           "field-section size limit must be between 0 and #{UInt64::MAX}: #{limit}"
@@ -303,20 +304,26 @@ module HPack
       {index, name, value}
     end
 
+    # Shared body of `literal_never_indexed` and `literal_without_indexing`,
+    # which differ only in which `Indexing` marker the caller attaches to
+    # the result: both read a *prefix_bits*-bit prefixed index, resolve the
+    # name (literal or table-indexed), and read the literal value.
     @[AlwaysInline]
-    def literal_never_indexed
-      index = integer(4)
+    private def literal(prefix_bits)
+      index = integer(prefix_bits)
       name = index == 0 ? string : indexed(index).first
       value = string
       {index, name, value}
     end
 
     @[AlwaysInline]
+    def literal_never_indexed
+      literal(4)
+    end
+
+    @[AlwaysInline]
     def literal_without_indexing
-      index = integer(4)
-      name = index == 0 ? string : indexed(index).first
-      value = string
-      {index, name, value}
+      literal(4)
     end
 
     def indexed(index)
