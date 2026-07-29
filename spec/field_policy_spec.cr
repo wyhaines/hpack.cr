@@ -456,4 +456,16 @@ describe "per-field encoding policies" do
     encoder.table.to_a.should eq decoder.table.to_a
     encoder.table.bytesize.should eq decoder.table.bytesize
   end
+
+  it "rejects a policy block that re-enters encode on the same encoder" do
+    encoder = HPack::Encoder.new
+    headers = HTTP::Headers{"x-outer" => "one"}
+
+    expect_raises(HPack::Error, "re-entrant encode") do
+      encoder.encode(headers) do |name, _value|
+        encoder.encode(HTTP::Headers{"x-inner" => "two"}) if name == "x-outer"
+        nil
+      end
+    end
+  end
 end

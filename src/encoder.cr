@@ -1,3 +1,4 @@
+require "./error"
 require "./indexing"
 require "./header_field"
 require "./dynamic_table"
@@ -59,6 +60,14 @@ module HPack
     @eviction_journal_listener : Proc(Tuple(String, String), Nil)
     @pending_table_size_minimum : Int32?
     @pending_table_size_final : Int32?
+    # The `Fiber` currently inside `synchronize`'s critical section, or
+    # `nil`. Tracking the fiber (not just a `Bool`) distinguishes a policy
+    # callback that re-enters `encode`/`encode_into`/`resize_table` on this
+    # same encoder from the same fiber (unsafe: corrupts `@buffer` and the
+    # transaction journal, so it's rejected) from two different fibers
+    # legitimately calling the encoder concurrently (safe: the second just
+    # waits its turn, same as before this guard existed).
+    @encoding_fiber : Fiber?
     # Grow-only scratch reused across every Huffman-encoded name/value so a
     # steady-state encode allocates nothing beyond the final owned output
     # slice. Never exposed: callers only ever see bytes copied out of it.
@@ -84,6 +93,7 @@ module HPack
       @eviction_journal_listener = ->(header : Tuple(String, String)) { @transaction_evicted << header }
       @pending_table_size_minimum = nil
       @pending_table_size_final = nil
+      @encoding_fiber = nil
       @huffman_scratch = Bytes.new(128)
       @default_indexing = indexing
       @default_huffman = huffman
@@ -138,6 +148,12 @@ module HPack
     #
     # The block receives the normalized name and value and may return
     # `FieldOptions` overrides. A `nil` return retains the per-call values.
+    #
+    # The block must not call back into `encode`/`encode_into` on this same
+    # encoder (that raises `Error`), and must not mutate *headers* itself:
+    # pseudo-headers and regular headers are each walked in a separate pass
+    # over the same `HTTP::Headers`, so a mutation made from the block during
+    # the first pass would be observed by the second.
     #
     # ```
     # encoder.encode(headers, huffman: HPack::HuffmanMode::SMALLER) do |name, _|
@@ -285,6 +301,11 @@ module HPack
     # Existing output is not cleared. The policy is evaluated once per field
     # after name normalization and pseudo-header ordering.
     #
+    # As with the policy-block `#encode(headers)` overload, the block must
+    # not call back into this same encoder and must not mutate *headers*
+    # (pseudo-headers and regular headers are walked in two separate passes
+    # over it).
+    #
     # The block is encoded into an internal buffer first, so a failure
     # during encoding leaves *output* untouched. The completed block is then
     # copied to *output* in a single `write` call; whether that call itself
@@ -426,12 +447,42 @@ module HPack
       nil
     end
 
+    # Every public `encode`/`encode_into`/`resize_table` entry point wraps
+    # its body in `synchronize`, so this is the single choke point where a
+    # policy callback (the `& : String, String -> FieldOptions?` block
+    # accepted by several overloads) that calls back into this same encoder
+    # from the same fiber can be caught. The check has to happen here,
+    # before the `-Dpreview_mt` mutex lock below, rather than inside
+    # `with_writer`: `Mutex` itself already refuses to re-lock from the same
+    # fiber, but raises its own `Sync::Error::Deadlock` first, which would
+    # make the failure mode depend on the build flag. Checking
+    # `@encoding_fiber` first gives one consistent `Error` in every build,
+    # and guards `resize_table` too, since mutating table state
+    # mid-transaction is just as unsafe.
     private def synchronize(&)
+      if @encoding_fiber == Fiber.current
+        raise Error.new("re-entrant encode on the same Encoder is unsupported")
+      end
+
       {% if flag?(:preview_mt) %}
-        @mutex.synchronize { yield }
+        @mutex.synchronize { track_encoding_fiber { yield } }
       {% else %}
-        yield
+        track_encoding_fiber { yield }
       {% end %}
+    end
+
+    # Records the fiber running the critical section for the duration of
+    # *yield*, so a same-fiber re-entrant call can be distinguished from a
+    # different fiber legitimately waiting its turn (the latter must not be
+    # rejected; it just blocks on the mutex as it always has).
+    private def track_encoding_fiber(&)
+      previous_fiber = @encoding_fiber
+      @encoding_fiber = Fiber.current
+      begin
+        yield
+      ensure
+        @encoding_fiber = previous_fiber
+      end
     end
 
     private def with_writer(output : IO, transactional : Bool, &)
