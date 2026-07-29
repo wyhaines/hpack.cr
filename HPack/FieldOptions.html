@@ -14,7 +14,7 @@
 <script type="text/javascript" src="../js/doc.js"></script>
 
   <meta name="repository-name" content="hpack">
-  <title>HPack::Indexing - hpack 1.4.0</title>
+  <title>HPack::FieldOptions - hpack 1.4.0</title>
   <script type="text/javascript">
     CrystalDocs.base_path = "../";
   </script>
@@ -92,7 +92,7 @@
       
     </li>
   
-  <li class=" " data-id="hpack/HPack/FieldOptions" data-name="hpack::fieldoptions">
+  <li class=" current" data-id="hpack/HPack/FieldOptions" data-name="hpack::fieldoptions">
       <a href="../HPack/FieldOptions.html">FieldOptions</a>
       
     </li>
@@ -112,7 +112,7 @@
       
     </li>
   
-  <li class=" current" data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
+  <li class=" " data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
       <a href="../HPack/Indexing.html">Indexing</a>
       
     </li>
@@ -137,14 +137,31 @@
 <h1 class="type-name">
 
   <span class="kind">
-    enum
-  </span> HPack::<wbr>Indexing
+    struct
+  </span> HPack::<wbr>FieldOptions
 
 </h1>
 
 
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/FieldOptions.html">HPack::FieldOptions</a></li><li class="superclass">Struct</li><li class="superclass">Value</li><li class="superclass">Object</li></ul>
 
 
+
+
+  <h2>
+    <a id="overview" class="anchor" href="#overview">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Overview
+  </h2>
+
+  <p>Optional indexing and Huffman overrides returned by an encoder policy block.</p>
+<pre><code class="language-crystal">options <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">FieldOptions</span>.new(
+  indexing: <span class="t">HPack</span><span class="t">::</span><span class="t">Indexing</span><span class="t">::</span><span class="t">NEVER</span>,
+  huffman: <span class="t">HPack</span><span class="t">::</span><span class="t">HuffmanMode</span><span class="t">::</span><span class="t">SMALLER</span>
+)</code></pre>
 
 
 
@@ -171,60 +188,33 @@
   </h2>
   
     
-      indexing.cr
+      header_field.cr
     
     <br/>
   
 
 
 
+
+
   
-    <h2>
-      <a id="enum-members" class="anchor" href="#enum-members">
+  <h2>
+    <a id="constructors" class="anchor" href="#constructors">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>
-      Enum Members
-    </h2>
-  
-  <dl>
+    Constructors
+  </h2>
+  <ul class="list-summary">
     
-      <dt class="entry-const" id="INDEXED">
-        <strong>INDEXED</strong> = <code><span class="n">128_u8</span></code>
-      </dt>
-      
+      <li class="entry-summary">
+        <a href="#new%28indexing%3AIndexing%7CNil%3Dnil%2Chuffman%3AHuffmanMode%7CNil%3Dnil%29-class-method" class="signature"><strong>.new</strong>(indexing : Indexing | Nil = <span class="n">nil</span>, huffman : HuffmanMode | Nil = <span class="n">nil</span>)</a>
+        
+      </li>
     
-      <dt class="entry-const" id="ALWAYS">
-        <strong>ALWAYS</strong> = <code><span class="n">64_u8</span></code>
-      </dt>
-      
-    
-      <dt class="entry-const" id="NEVER">
-        <strong>NEVER</strong> = <code><span class="n">16_u8</span></code>
-      </dt>
-      
-    
-      <dt class="entry-const" id="NONE">
-        <strong>NONE</strong> = <code><span class="n">0_u8</span></code>
-      </dt>
-      
-    
-      <dt class="entry-const" id="None">
-        <strong>None</strong> = <code><span class="n">0_u8</span></code>
-      </dt>
-      
-    
-      <dt class="entry-const" id="All">
-        <strong>All</strong> = <code><span class="n">208_u8</span></code>
-      </dt>
-      
-    
-  </dl>
+  </ul>
 
-
-
-  
 
   
 
@@ -242,30 +232,22 @@
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#always%3F-instance-method" class="signature"><strong>#always?</strong></a>
-        
-          <div class="summary"><p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#ALWAYS">ALWAYS</a></code></p></div>
+        <a href="#clone-instance-method" class="signature"><strong>#clone</strong></a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#indexed%3F-instance-method" class="signature"><strong>#indexed?</strong></a>
-        
-          <div class="summary"><p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#INDEXED">INDEXED</a></code></p></div>
+        <a href="#copy_with%28indexing_indexing%3D%40indexing%2Chuffman_huffman%3D%40huffman%29-instance-method" class="signature"><strong>#copy_with</strong>(indexing _indexing = @indexing, huffman _huffman = @huffman)</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#never%3F-instance-method" class="signature"><strong>#never?</strong></a>
-        
-          <div class="summary"><p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#NEVER">NEVER</a></code></p></div>
+        <a href="#huffman%3AHuffmanMode%7CNil-instance-method" class="signature"><strong>#huffman</strong> : HuffmanMode | Nil</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#none%3F-instance-method" class="signature"><strong>#none?</strong></a>
-        
-          <div class="summary"><p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#NONE">NONE</a></code></p></div>
+        <a href="#indexing%3AIndexing%7CNil-instance-method" class="signature"><strong>#indexing</strong> : Indexing | Nil</a>
         
       </li>
     
@@ -314,22 +296,33 @@
 
 
     
-      
-
-
-      
-
-
-      
-
-
-      
-
-
-    
   </div>
 
   
+  <h2>
+    <a id="constructor-detail" class="anchor" href="#constructor-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructor Detail
+  </h2>
+  
+    <div class="entry-detail" id="new(indexing:Indexing|Nil=nil,huffman:HuffmanMode|Nil=nil)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(indexing : <a href="../HPack/Indexing.html">Indexing</a> | Nil = <span class="n">nil</span>, huffman : <a href="../HPack/HuffmanMode.html">HuffmanMode</a> | Nil = <span class="n">nil</span>)
+
+        <a class="method-permalink" href="#new%28indexing%3AIndexing%7CNil%3Dnil%2Chuffman%3AHuffmanMode%7CNil%3Dnil%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+
 
   
 
@@ -345,18 +338,13 @@
     Instance Method Detail
   </h2>
   
-    <div class="entry-detail" id="always?-instance-method">
+    <div class="entry-detail" id="clone-instance-method">
       <div class="signature">
         
-        def <strong>always?</strong>
+        def <strong>clone</strong>
 
-        <a class="method-permalink" href="#always%3F-instance-method">#</a>
+        <a class="method-permalink" href="#clone-instance-method">#</a>
       </div>
-      
-        <div class="doc">
-          
-          <p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#ALWAYS">ALWAYS</a></code></p>
-        </div>
       
       <br/>
       <div>
@@ -364,18 +352,13 @@
       </div>
     </div>
   
-    <div class="entry-detail" id="indexed?-instance-method">
+    <div class="entry-detail" id="copy_with(indexing_indexing=@indexing,huffman_huffman=@huffman)-instance-method">
       <div class="signature">
         
-        def <strong>indexed?</strong>
+        def <strong>copy_with</strong>(indexing _indexing = @indexing, huffman _huffman = @huffman)
 
-        <a class="method-permalink" href="#indexed%3F-instance-method">#</a>
+        <a class="method-permalink" href="#copy_with%28indexing_indexing%3D%40indexing%2Chuffman_huffman%3D%40huffman%29-instance-method">#</a>
       </div>
-      
-        <div class="doc">
-          
-          <p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#INDEXED">INDEXED</a></code></p>
-        </div>
       
       <br/>
       <div>
@@ -383,18 +366,13 @@
       </div>
     </div>
   
-    <div class="entry-detail" id="never?-instance-method">
+    <div class="entry-detail" id="huffman:HuffmanMode|Nil-instance-method">
       <div class="signature">
         
-        def <strong>never?</strong>
+        def <strong>huffman</strong> : <a href="../HPack/HuffmanMode.html">HuffmanMode</a> | Nil
 
-        <a class="method-permalink" href="#never%3F-instance-method">#</a>
+        <a class="method-permalink" href="#huffman%3AHuffmanMode%7CNil-instance-method">#</a>
       </div>
-      
-        <div class="doc">
-          
-          <p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#NEVER">NEVER</a></code></p>
-        </div>
       
       <br/>
       <div>
@@ -402,18 +380,13 @@
       </div>
     </div>
   
-    <div class="entry-detail" id="none?-instance-method">
+    <div class="entry-detail" id="indexing:Indexing|Nil-instance-method">
       <div class="signature">
         
-        def <strong>none?</strong>
+        def <strong>indexing</strong> : <a href="../HPack/Indexing.html">Indexing</a> | Nil
 
-        <a class="method-permalink" href="#none%3F-instance-method">#</a>
+        <a class="method-permalink" href="#indexing%3AIndexing%7CNil-instance-method">#</a>
       </div>
-      
-        <div class="doc">
-          
-          <p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#NONE">NONE</a></code></p>
-        </div>
       
       <br/>
       <div>

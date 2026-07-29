@@ -10,13 +10,13 @@
 
 
 
-<link href="css/style.css" rel="stylesheet" type="text/css" />
-<script type="text/javascript" src="js/doc.js"></script>
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../js/doc.js"></script>
 
   <meta name="repository-name" content="hpack">
-  <title>hpack 1.4.0</title>
+  <title>HPack::ResourceLimitError - hpack 1.4.0</title>
   <script type="text/javascript">
-  CrystalDocs.base_path = "";
+    CrystalDocs.base_path = "../";
   </script>
 </head>
 <body>
@@ -39,7 +39,7 @@
 
     <div class="project-summary">
       <h1 class="project-name">
-        <a href="index.html">
+        <a href="../index.html">
           hpack
         </a>
       </h1>
@@ -57,68 +57,68 @@
   <div class="types-list">
     <ul>
   
-  <li class="parent " data-id="hpack/HPack" data-name="hpack">
-      <a href="HPack.html">HPack</a>
+  <li class="parent open current" data-id="hpack/HPack" data-name="hpack">
+      <a href="../HPack.html">HPack</a>
       
         <ul>
   
   <li class=" " data-id="hpack/HPack/DecodedHeader" data-name="hpack::decodedheader">
-      <a href="HPack/DecodedHeader.html">DecodedHeader</a>
+      <a href="../HPack/DecodedHeader.html">DecodedHeader</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/Decoder" data-name="hpack::decoder">
-      <a href="HPack/Decoder.html">Decoder</a>
+      <a href="../HPack/Decoder.html">Decoder</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/DecodeResult" data-name="hpack::decoderesult">
-      <a href="HPack/DecodeResult.html">DecodeResult</a>
+      <a href="../HPack/DecodeResult.html">DecodeResult</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/DynamicTable" data-name="hpack::dynamictable">
-      <a href="HPack/DynamicTable.html">DynamicTable</a>
+      <a href="../HPack/DynamicTable.html">DynamicTable</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/Encoder" data-name="hpack::encoder">
-      <a href="HPack/Encoder.html">Encoder</a>
+      <a href="../HPack/Encoder.html">Encoder</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/Error" data-name="hpack::error">
-      <a href="HPack/Error.html">Error</a>
+      <a href="../HPack/Error.html">Error</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/FieldOptions" data-name="hpack::fieldoptions">
-      <a href="HPack/FieldOptions.html">FieldOptions</a>
+      <a href="../HPack/FieldOptions.html">FieldOptions</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/HeaderField" data-name="hpack::headerfield">
-      <a href="HPack/HeaderField.html">HeaderField</a>
+      <a href="../HPack/HeaderField.html">HeaderField</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
-      <a href="HPack/Huffman.html">Huffman</a>
+      <a href="../HPack/Huffman.html">Huffman</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/HuffmanMode" data-name="hpack::huffmanmode">
-      <a href="HPack/HuffmanMode.html">HuffmanMode</a>
+      <a href="../HPack/HuffmanMode.html">HuffmanMode</a>
       
     </li>
   
   <li class=" " data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
-      <a href="HPack/Indexing.html">Indexing</a>
+      <a href="../HPack/Indexing.html">Indexing</a>
       
     </li>
   
-  <li class=" " data-id="hpack/HPack/ResourceLimitError" data-name="hpack::resourcelimiterror">
-      <a href="HPack/ResourceLimitError.html">ResourceLimitError</a>
+  <li class=" current" data-id="hpack/HPack/ResourceLimitError" data-name="hpack::resourcelimiterror">
+      <a href="../HPack/ResourceLimitError.html">ResourceLimitError</a>
       
     </li>
   
@@ -135,18 +135,131 @@
 
 <div class="main-content">
 <h1 class="type-name">
-  404 Not Found
+
+  <span class="kind">
+    class
+  </span> HPack::<wbr>ResourceLimitError
+
 </h1>
 
-<p>
-  This page is unavailable in this version of the API docs.
-</p>
 
-<p>
-  You can use the sidebar to search for your page, or try a different
-  Crystal version.
-</p>
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/ResourceLimitError.html">HPack::ResourceLimitError</a></li><li class="superclass">Exception</li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
+
+
+
+
+  <h2>
+    <a id="overview" class="anchor" href="#overview">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Overview
+  </h2>
+
+  <p>Raised when decoding would exceed a locally configured resource limit,
+such as the hard decoded-string cap or checked size accounting.</p>
+<p>This is deliberately not a subclass of <code><a href="../HPack/Error.html">Error</a></code>: the input may be valid
+HPACK that this decoder refuses to materialize. A block that fails with
+this error was not fully decompressed, so the decoder's compression
+context is stale and the decoder must be discarded.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      error.cr
+    
+    <br/>
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+
+  <div class="methods-inherited">
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+  </div>
+
+  
+
+  
+
+  
+
+  
+
 
 </div>
+
 </body>
 </html>

@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="generator" content="Crystal Docs 1.2.2">
-<meta name="crystal_docs.project_version" content="main">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Crystal Docs 1.20.3">
+<meta name="crystal_docs.project_version" content="1.4.0">
 <meta name="crystal_docs.project_name" content="hpack">
 
 
@@ -13,7 +14,7 @@
 <script type="text/javascript" src="../js/doc.js"></script>
 
   <meta name="repository-name" content="hpack">
-  <title>HPack::Decoder - hpack main</title>
+  <title>HPack::Decoder - hpack 1.4.0</title>
   <script type="text/javascript">
     CrystalDocs.base_path = "../";
   </script>
@@ -22,9 +23,14 @@
 
 <svg class="hidden">
   <symbol id="octicon-link" viewBox="0 0 16 16">
-    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+    <path fill="currentColor" fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
   </symbol>
 </svg>
+<input type="checkbox" id="sidebar-btn">
+<label for="sidebar-btn" id="sidebar-btn-label">
+  <svg class="open" xmlns="http://www.w3.org/2000/svg" height="2em" width="2em" viewBox="0 0 512 512"><title>Open Sidebar</title><path fill="currentColor" d="M80 96v64h352V96H80zm0 112v64h352v-64H80zm0 112v64h352v-64H80z"></path></svg>
+  <svg class="close" xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 512 512"><title>Close Sidebar</title><path fill="currentColor" d="m118.6 73.4-45.2 45.2L210.7 256 73.4 393.4l45.2 45.2L256 301.3l137.4 137.3 45.2-45.2L301.3 256l137.3-137.4-45.2-45.2L256 210.7Z"></path></svg>
+</label>
 <div class="sidebar">
   <div class="sidebar-header">
     <div class="search-box">
@@ -39,7 +45,7 @@
       </h1>
 
       <span class="project-version">
-        main
+        1.4.0
       </span>
     </div>
   </div>
@@ -56,8 +62,18 @@
       
         <ul>
   
+  <li class=" " data-id="hpack/HPack/DecodedHeader" data-name="hpack::decodedheader">
+      <a href="../HPack/DecodedHeader.html">DecodedHeader</a>
+      
+    </li>
+  
   <li class=" current" data-id="hpack/HPack/Decoder" data-name="hpack::decoder">
       <a href="../HPack/Decoder.html">Decoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/DecodeResult" data-name="hpack::decoderesult">
+      <a href="../HPack/DecodeResult.html">DecodeResult</a>
       
     </li>
   
@@ -76,18 +92,23 @@
       
     </li>
   
-  <li class="parent " data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
-      <a href="../HPack/Huffman.html">Huffman</a>
-      
-        <ul>
-  
-  <li class=" " data-id="hpack/HPack/Huffman/Node" data-name="hpack::huffman::node">
-      <a href="../HPack/Huffman/Node.html">Node</a>
+  <li class=" " data-id="hpack/HPack/FieldOptions" data-name="hpack::fieldoptions">
+      <a href="../HPack/FieldOptions.html">FieldOptions</a>
       
     </li>
   
-</ul>
-
+  <li class=" " data-id="hpack/HPack/HeaderField" data-name="hpack::headerfield">
+      <a href="../HPack/HeaderField.html">HeaderField</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
+      <a href="../HPack/Huffman.html">Huffman</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/HuffmanMode" data-name="hpack::huffmanmode">
+      <a href="../HPack/HuffmanMode.html">HuffmanMode</a>
       
     </li>
   
@@ -96,8 +117,8 @@
       
     </li>
   
-  <li class=" " data-id="hpack/HPack/SliceReader" data-name="hpack::slicereader">
-      <a href="../HPack/SliceReader.html">SliceReader</a>
+  <li class=" " data-id="hpack/HPack/ResourceLimitError" data-name="hpack::resourcelimiterror">
+      <a href="../HPack/ResourceLimitError.html">ResourceLimitError</a>
       
     </li>
   
@@ -115,12 +136,14 @@
 <div class="main-content">
 <h1 class="type-name">
 
-  <span class="kind">struct</span> HPack::Decoder
+  <span class="kind">
+    class
+  </span> HPack::<wbr>Decoder
 
 </h1>
 
 
-  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/Decoder.html">HPack::Decoder</a></li><li class="superclass">Struct</li><li class="superclass">Value</li><li class="superclass">Object</li></ul>
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/Decoder.html">HPack::Decoder</a></li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
 
 
 
@@ -134,18 +157,30 @@
     Overview
   </h2>
 
-  <p>To decode headers, used a <code><a href="../HPack/Decoder.html">HPack::Decoder</a></code> instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.</p>
+  <p>To decode headers, use a <code><a href="../HPack/Decoder.html">HPack::Decoder</a></code> instance. By default, a decoder is created with a 4k (4096 bytes) table size. That table size can be changed in the constructor.</p>
 <pre><code class="language-crystal"><span class="c"># To create a default Decoder:</span>
-decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.<span class="k">new</span>
+decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.new
 
 <span class="c"># To create a decoder with a larger table size:</span>
-decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.<span class="k">new</span>(<span class="n">8192</span>)
+decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.new(<span class="n">8192</span>)
+
+<span class="c"># To create a decoder that refuses to materialize any single literal</span>
+<span class="c"># larger than 64 KiB:</span>
+decoder <span class="o">=</span> <span class="t">HPack</span><span class="t">::</span><span class="t">Decoder</span>.new(max_decoded_string_size: <span class="n">64</span> <span class="o">*</span> <span class="n">1024</span>)
 
 <span class="c"># To decode headers:</span>
 headers <span class="o">=</span> decoder.decode(bytes)
 
 <span class="c"># To decode headers into an existing `HTTP::Headers` instance:</span>
-headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.<span class="k">new</span>)</code></pre>
+headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.new)
+
+<span class="c"># To decode with a decompressed field-section budget:</span>
+result <span class="o">=</span> decoder.decode_each(bytes, max_field_section_size: <span class="n">64</span> <span class="o">*</span> <span class="n">1024</span>) <span class="k">do</span> <span class="o">|</span>field<span class="o">|</span>
+  <span class="c"># Validate or retain this ordered field.</span>
+<span class="k">end</span>
+result.limit_exceeded <span class="c"># =&gt; false</span></code></pre>
+
+
 
 
 
@@ -170,9 +205,7 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
   </h2>
   
     
-      <a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L20" target="_blank">
-        decoder.cr
-      </a>
+      decoder.cr
     
     <br/>
   
@@ -181,6 +214,7 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
 
 
 
+  
   <h2>
     <a id="constructors" class="anchor" href="#constructors">
   <svg class="octicon-link" aria-hidden="true">
@@ -192,16 +226,18 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#new%28max_table_size%3D4096%29-class-method" class="signature"><strong>.new</strong>(max_table_size = <span class="n">4096</span>)</a>
+        <a href="#new%28max_table_size%3D4096%2Cmax_decoded_string_size%3AInt%7CNil%3Dnil%29-class-method" class="signature"><strong>.new</strong>(max_table_size = <span class="n">4096</span>, max_decoded_string_size : Int | Nil = <span class="n">nil</span>)</a>
         
       </li>
     
   </ul>
 
 
+  
 
+  
 
-
+  
   <h2>
     <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
   <svg class="octicon-link" aria-hidden="true">
@@ -213,7 +249,23 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#decode%28bytes%2Cheaders%3DHTTP%3A%3AHeaders.new%29-instance-method" class="signature"><strong>#decode</strong>(bytes, headers = <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.<span class="k">new</span>)</a>
+        <a href="#decode%28bytes%2Cheaders%3DHTTP%3A%3AHeaders.new%29-instance-method" class="signature"><strong>#decode</strong>(bytes, headers = <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.new)</a>
+        
+          <div class="summary"><p>Decodes <em>bytes</em> and adds each field to <em>headers</em>.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#decode_each%28bytes%2Cmax_field_section_size%3AInt%7CNil%3Dnil%2C%26%3ADecodedHeader-%3E%29%3ADecodeResult-instance-method" class="signature"><strong>#decode_each</strong>(bytes, max_field_section_size : Int | Nil = <span class="n">nil</span>, & : DecodedHeader -> ) : DecodeResult</a>
+        
+          <div class="summary"><p>Decodes <em>bytes</em>, yielding one <code><a href="../HPack/DecodedHeader.html">DecodedHeader</a></code> per field in wire order.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#decode_with_metadata%28bytes%2Cheaders%3DHTTP%3A%3AHeaders.new%29-instance-method" class="signature"><strong>#decode_with_metadata</strong>(bytes, headers = <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.new)</a>
+        
+          <div class="summary"><p>Decodes headers and retains their ordered indexing representations.</p></div>
         
       </li>
     
@@ -248,12 +300,21 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       </li>
     
       <li class="entry-summary">
+        <a href="#max_decoded_string_size%3AInt32%7CNil-instance-method" class="signature"><strong>#max_decoded_string_size</strong> : Int32 | Nil</a>
+        
+          <div class="summary"><p>The hard cap applied to every decoded literal name and value, or <code>nil</code> when literals are unbounded.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
         <a href="#max_table_size%3AInt32-instance-method" class="signature"><strong>#max_table_size</strong> : Int32</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#max_table_size%3D%28max_table_size%3AInt32%29-instance-method" class="signature"><strong>#max_table_size=</strong>(max_table_size : Int32)</a>
+        <a href="#max_table_size%3D%28size%3AInt%29-instance-method" class="signature"><strong>#max_table_size=</strong>(size : Int)</a>
+        
+          <div class="summary"><p>Changes the protocol limit for dynamic-table size updates.</p></div>
         
       </li>
     
@@ -271,43 +332,37 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
 
 
 
-
-
-<div class="methods-inherited">
-  
+  <div class="methods-inherited">
     
+      
 
 
-    
+      
 
 
-    
+      
 
 
-  
-    
+      
 
 
     
+      
+
+
+      
+
+
+      
+
+
+      
 
 
     
-
-
-  
-    
-
-
-    
-
-
-    
-
+  </div>
 
   
-</div>
-
-
   <h2>
     <a id="constructor-detail" class="anchor" href="#constructor-detail">
   <svg class="octicon-link" aria-hidden="true">
@@ -317,27 +372,27 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
     Constructor Detail
   </h2>
   
-    <div class="entry-detail" id="new(max_table_size=4096)-class-method">
+    <div class="entry-detail" id="new(max_table_size=4096,max_decoded_string_size:Int|Nil=nil)-class-method">
       <div class="signature">
         
-        def self.<strong>new</strong>(max_table_size = <span class="n">4096</span>)
+        def self.<strong>new</strong>(max_table_size = <span class="n">4096</span>, max_decoded_string_size : Int | Nil = <span class="n">nil</span>)
 
-        <a class="method-permalink" href="#new%28max_table_size%3D4096%29-class-method">#</a>
+        <a class="method-permalink" href="#new%28max_table_size%3D4096%2Cmax_decoded_string_size%3AInt%7CNil%3Dnil%29-class-method">#</a>
       </div>
       
       <br/>
       <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L25" target="_blank">View source</a>]
         
       </div>
     </div>
   
 
 
+  
 
+  
 
-
+  
   <h2>
     <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
   <svg class="octicon-link" aria-hidden="true">
@@ -350,15 +405,84 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
     <div class="entry-detail" id="decode(bytes,headers=HTTP::Headers.new)-instance-method">
       <div class="signature">
         
-        def <strong>decode</strong>(bytes, headers = <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.<span class="k">new</span>)
+        def <strong>decode</strong>(bytes, headers = <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.new)
 
         <a class="method-permalink" href="#decode%28bytes%2Cheaders%3DHTTP%3A%3AHeaders.new%29-instance-method">#</a>
       </div>
       
+        <div class="doc">
+          
+          <p>Decodes <em>bytes</em> and adds each field to <em>headers</em>.</p>
+<p>Output is unlimited; use <code><a href="../HPack/Decoder.html#decode_each%28bytes%2Cmax_field_section_size%3AInt%7CNil%3Dnil%2C%26%3ADecodedHeader-%3E%29%3ADecodeResult-instance-method">#decode_each</a></code> with <code>max_field_section_size</code>
+to bound the decompressed size of untrusted field blocks.</p>
+        </div>
+      
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L29" target="_blank">View source</a>]
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="decode_each(bytes,max_field_section_size:Int|Nil=nil,&amp;:DecodedHeader-&gt;):DecodeResult-instance-method">
+      <div class="signature">
+        
+        def <strong>decode_each</strong>(bytes, max_field_section_size : Int | Nil = <span class="n">nil</span>, & : <a href="../HPack/DecodedHeader.html">DecodedHeader</a> -> ) : <a href="../HPack/DecodeResult.html">DecodeResult</a>
+
+        <a class="method-permalink" href="#decode_each%28bytes%2Cmax_field_section_size%3AInt%7CNil%3Dnil%2C%26%3ADecodedHeader-%3E%29%3ADecodeResult-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Decodes <em>bytes</em>, yielding one <code><a href="../HPack/DecodedHeader.html">DecodedHeader</a></code> per field in wire order.</p>
+<p>Yielded names and values are ordinary immutable strings and remain
+valid after the callback; no header collection is retained internally.</p>
+<p><code>max_field_section_size</code> bounds the decompressed output using the
+HTTP/2 field-section size rule (<code>name.bytesize + value.bytesize + 32</code>
+per field). A total exactly equal to the limit is accepted. The field
+that crosses the limit is not yielded and neither is any later field,
+but the rest of the block is still parsed and dynamic-table insertions
+and size updates are still applied, so the compression context stays
+synchronized with the peer. <code>nil</code> means unlimited.</p>
+<p>If the callback raises, the first exception is saved, no later field is
+yielded, and the remainder of the block is still decoded. A malformed
+remainder raises <code><a href="../HPack/Error.html">Error</a></code> and a resource cap raises <code><a href="../HPack/ResourceLimitError.html">ResourceLimitError</a></code>;
+otherwise the saved callback exception is re-raised after the block has
+been fully decompressed, leaving the decoder reusable.</p>
+<p>Returns a <code><a href="../HPack/DecodeResult.html">DecodeResult</a></code> carrying the final decoded size and whether
+the limit was crossed. Callers should not publish the field section to
+application code until <code>limit_exceeded</code> is known.</p>
+<pre><code class="language-crystal">result <span class="o">=</span> decoder.decode_each(
+  encoded,
+  max_field_section_size: <span class="n">64</span> <span class="o">*</span> <span class="n">1024</span>,
+) <span class="k">do</span> <span class="o">|</span>field<span class="o">|</span>
+  <span class="c"># Validate or retain this ordered field.</span>
+<span class="k">end</span></code></pre>
+        </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="decode_with_metadata(bytes,headers=HTTP::Headers.new)-instance-method">
+      <div class="signature">
+        
+        def <strong>decode_with_metadata</strong>(bytes, headers = <span class="t">HTTP</span><span class="t">::</span><span class="t">Headers</span>.new)
+
+        <a class="method-permalink" href="#decode_with_metadata%28bytes%2Cheaders%3DHTTP%3A%3AHeaders.new%29-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Decodes headers and retains their ordered indexing representations.</p>
+<p>The returned <code>headers</code> value is the same value returned by <code><a href="../HPack/Decoder.html#decode%28bytes%2Cheaders%3DHTTP%3A%3AHeaders.new%29-instance-method">#decode</a></code>.
+<code>fields</code> retains one entry per decoded field, including <code><a href="../HPack/Indexing.html#NEVER">Indexing::NEVER</a></code>
+markers that intermediaries need when forwarding fields.</p>
+        </div>
+      
+      <br/>
+      <div>
         
       </div>
     </div>
@@ -374,8 +498,6 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L94" target="_blank">View source</a>]
-        
       </div>
     </div>
   
@@ -389,8 +511,6 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       
       <br/>
       <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L108" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -406,8 +526,6 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L62" target="_blank">View source</a>]
-        
       </div>
     </div>
   
@@ -421,8 +539,6 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       
       <br/>
       <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L79" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -438,8 +554,6 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L70" target="_blank">View source</a>]
-        
       </div>
     </div>
   
@@ -454,7 +568,25 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L87" target="_blank">View source</a>]
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="max_decoded_string_size:Int32|Nil-instance-method">
+      <div class="signature">
+        
+        def <strong>max_decoded_string_size</strong> : Int32 | Nil
+
+        <a class="method-permalink" href="#max_decoded_string_size%3AInt32%7CNil-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>The hard cap applied to every decoded literal name and value, or <code>nil</code>
+when literals are unbounded.</p>
+        </div>
+      
+      <br/>
+      <div>
         
       </div>
     </div>
@@ -470,23 +602,27 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L23" target="_blank">View source</a>]
-        
       </div>
     </div>
   
-    <div class="entry-detail" id="max_table_size=(max_table_size:Int32)-instance-method">
+    <div class="entry-detail" id="max_table_size=(size:Int)-instance-method">
       <div class="signature">
         
-        def <strong>max_table_size=</strong>(max_table_size : Int32)
+        def <strong>max_table_size=</strong>(size : Int)
 
-        <a class="method-permalink" href="#max_table_size%3D%28max_table_size%3AInt32%29-instance-method">#</a>
+        <a class="method-permalink" href="#max_table_size%3D%28size%3AInt%29-instance-method">#</a>
       </div>
+      
+        <div class="doc">
+          
+          <p>Changes the protocol limit for dynamic-table size updates.</p>
+<p>Reducing this limit below the peer's current table capacity requires a
+conforming update at the beginning of the next decoded field block. The
+table itself is resized only when that instruction is received.</p>
+        </div>
       
       <br/>
       <div>
-        
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L23" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -502,8 +638,6 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L125" target="_blank">View source</a>]
-        
       </div>
     </div>
   
@@ -518,12 +652,9 @@ headers <span class="o">=</span> decoder.decode(bytes, <span class="t">HTTP</spa
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/decoder.cr#L22" target="_blank">View source</a>]
-        
       </div>
     </div>
   
-
 
 
 

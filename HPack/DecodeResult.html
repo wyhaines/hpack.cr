@@ -14,7 +14,7 @@
 <script type="text/javascript" src="../js/doc.js"></script>
 
   <meta name="repository-name" content="hpack">
-  <title>HPack::Indexing - hpack 1.4.0</title>
+  <title>HPack::DecodeResult - hpack 1.4.0</title>
   <script type="text/javascript">
     CrystalDocs.base_path = "../";
   </script>
@@ -72,7 +72,7 @@
       
     </li>
   
-  <li class=" " data-id="hpack/HPack/DecodeResult" data-name="hpack::decoderesult">
+  <li class=" current" data-id="hpack/HPack/DecodeResult" data-name="hpack::decoderesult">
       <a href="../HPack/DecodeResult.html">DecodeResult</a>
       
     </li>
@@ -112,7 +112,7 @@
       
     </li>
   
-  <li class=" current" data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
+  <li class=" " data-id="hpack/HPack/Indexing" data-name="hpack::indexing">
       <a href="../HPack/Indexing.html">Indexing</a>
       
     </li>
@@ -137,14 +137,31 @@
 <h1 class="type-name">
 
   <span class="kind">
-    enum
-  </span> HPack::<wbr>Indexing
+    struct
+  </span> HPack::<wbr>DecodeResult
 
 </h1>
 
 
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/DecodeResult.html">HPack::DecodeResult</a></li><li class="superclass">Struct</li><li class="superclass">Value</li><li class="superclass">Object</li></ul>
 
 
+
+
+  <h2>
+    <a id="overview" class="anchor" href="#overview">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Overview
+  </h2>
+
+  <p>The result of one <code><a href="../HPack/Decoder.html#decode_each%28bytes%2Cmax_field_section_size%3AInt%7CNil%3Dnil%2C%26%3ADecodedHeader-%3E%29%3ADecodeResult-instance-method">Decoder#decode_each</a></code> call.</p>
+<p><code><a href="../HPack/DecodeResult.html#decoded_size%3AUInt64-instance-method">#decoded_size</a></code> is the HTTP/2 field-section size of the whole block: the
+sum of <code>name.bytesize + value.bytesize + 32</code> over every decoded field,
+including fields suppressed after the limit was crossed. <code><a href="../HPack/DecodeResult.html#limit_exceeded%3ABool-instance-method">#limit_exceeded</a></code>
+is true when a configured <code>max_field_section_size</code> was crossed.</p>
 
 
 
@@ -171,60 +188,33 @@
   </h2>
   
     
-      indexing.cr
+      decoder.cr
     
     <br/>
   
 
 
 
+
+
   
-    <h2>
-      <a id="enum-members" class="anchor" href="#enum-members">
+  <h2>
+    <a id="constructors" class="anchor" href="#constructors">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>
-      Enum Members
-    </h2>
-  
-  <dl>
+    Constructors
+  </h2>
+  <ul class="list-summary">
     
-      <dt class="entry-const" id="INDEXED">
-        <strong>INDEXED</strong> = <code><span class="n">128_u8</span></code>
-      </dt>
-      
+      <li class="entry-summary">
+        <a href="#new%28decoded_size%3AUInt64%2Climit_exceeded%3ABool%29-class-method" class="signature"><strong>.new</strong>(decoded_size : UInt64, limit_exceeded : Bool)</a>
+        
+      </li>
     
-      <dt class="entry-const" id="ALWAYS">
-        <strong>ALWAYS</strong> = <code><span class="n">64_u8</span></code>
-      </dt>
-      
-    
-      <dt class="entry-const" id="NEVER">
-        <strong>NEVER</strong> = <code><span class="n">16_u8</span></code>
-      </dt>
-      
-    
-      <dt class="entry-const" id="NONE">
-        <strong>NONE</strong> = <code><span class="n">0_u8</span></code>
-      </dt>
-      
-    
-      <dt class="entry-const" id="None">
-        <strong>None</strong> = <code><span class="n">0_u8</span></code>
-      </dt>
-      
-    
-      <dt class="entry-const" id="All">
-        <strong>All</strong> = <code><span class="n">208_u8</span></code>
-      </dt>
-      
-    
-  </dl>
+  </ul>
 
-
-
-  
 
   
 
@@ -242,30 +232,22 @@
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#always%3F-instance-method" class="signature"><strong>#always?</strong></a>
-        
-          <div class="summary"><p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#ALWAYS">ALWAYS</a></code></p></div>
+        <a href="#clone-instance-method" class="signature"><strong>#clone</strong></a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#indexed%3F-instance-method" class="signature"><strong>#indexed?</strong></a>
-        
-          <div class="summary"><p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#INDEXED">INDEXED</a></code></p></div>
+        <a href="#copy_with%28decoded_size_decoded_size%3D%40decoded_size%2Climit_exceeded_limit_exceeded%3D%40limit_exceeded%29-instance-method" class="signature"><strong>#copy_with</strong>(decoded_size _decoded_size = @decoded_size, limit_exceeded _limit_exceeded = @limit_exceeded)</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#never%3F-instance-method" class="signature"><strong>#never?</strong></a>
-        
-          <div class="summary"><p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#NEVER">NEVER</a></code></p></div>
+        <a href="#decoded_size%3AUInt64-instance-method" class="signature"><strong>#decoded_size</strong> : UInt64</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#none%3F-instance-method" class="signature"><strong>#none?</strong></a>
-        
-          <div class="summary"><p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#NONE">NONE</a></code></p></div>
+        <a href="#limit_exceeded%3ABool-instance-method" class="signature"><strong>#limit_exceeded</strong> : Bool</a>
         
       </li>
     
@@ -314,22 +296,33 @@
 
 
     
-      
-
-
-      
-
-
-      
-
-
-      
-
-
-    
   </div>
 
   
+  <h2>
+    <a id="constructor-detail" class="anchor" href="#constructor-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructor Detail
+  </h2>
+  
+    <div class="entry-detail" id="new(decoded_size:UInt64,limit_exceeded:Bool)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(decoded_size : UInt64, limit_exceeded : Bool)
+
+        <a class="method-permalink" href="#new%28decoded_size%3AUInt64%2Climit_exceeded%3ABool%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+
 
   
 
@@ -345,18 +338,13 @@
     Instance Method Detail
   </h2>
   
-    <div class="entry-detail" id="always?-instance-method">
+    <div class="entry-detail" id="clone-instance-method">
       <div class="signature">
         
-        def <strong>always?</strong>
+        def <strong>clone</strong>
 
-        <a class="method-permalink" href="#always%3F-instance-method">#</a>
+        <a class="method-permalink" href="#clone-instance-method">#</a>
       </div>
-      
-        <div class="doc">
-          
-          <p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#ALWAYS">ALWAYS</a></code></p>
-        </div>
       
       <br/>
       <div>
@@ -364,18 +352,13 @@
       </div>
     </div>
   
-    <div class="entry-detail" id="indexed?-instance-method">
+    <div class="entry-detail" id="copy_with(decoded_size_decoded_size=@decoded_size,limit_exceeded_limit_exceeded=@limit_exceeded)-instance-method">
       <div class="signature">
         
-        def <strong>indexed?</strong>
+        def <strong>copy_with</strong>(decoded_size _decoded_size = @decoded_size, limit_exceeded _limit_exceeded = @limit_exceeded)
 
-        <a class="method-permalink" href="#indexed%3F-instance-method">#</a>
+        <a class="method-permalink" href="#copy_with%28decoded_size_decoded_size%3D%40decoded_size%2Climit_exceeded_limit_exceeded%3D%40limit_exceeded%29-instance-method">#</a>
       </div>
-      
-        <div class="doc">
-          
-          <p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#INDEXED">INDEXED</a></code></p>
-        </div>
       
       <br/>
       <div>
@@ -383,18 +366,13 @@
       </div>
     </div>
   
-    <div class="entry-detail" id="never?-instance-method">
+    <div class="entry-detail" id="decoded_size:UInt64-instance-method">
       <div class="signature">
         
-        def <strong>never?</strong>
+        def <strong>decoded_size</strong> : UInt64
 
-        <a class="method-permalink" href="#never%3F-instance-method">#</a>
+        <a class="method-permalink" href="#decoded_size%3AUInt64-instance-method">#</a>
       </div>
-      
-        <div class="doc">
-          
-          <p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#NEVER">NEVER</a></code></p>
-        </div>
       
       <br/>
       <div>
@@ -402,18 +380,13 @@
       </div>
     </div>
   
-    <div class="entry-detail" id="none?-instance-method">
+    <div class="entry-detail" id="limit_exceeded:Bool-instance-method">
       <div class="signature">
         
-        def <strong>none?</strong>
+        def <strong>limit_exceeded</strong> : Bool
 
-        <a class="method-permalink" href="#none%3F-instance-method">#</a>
+        <a class="method-permalink" href="#limit_exceeded%3ABool-instance-method">#</a>
       </div>
-      
-        <div class="doc">
-          
-          <p>Returns <code>true</code> if this enum value contains <code><a href="../HPack/Indexing.html#NONE">NONE</a></code></p>
-        </div>
       
       <br/>
       <div>

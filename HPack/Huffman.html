@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="generator" content="Crystal Docs 1.2.2">
-<meta name="crystal_docs.project_version" content="main">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Crystal Docs 1.20.3">
+<meta name="crystal_docs.project_version" content="1.4.0">
 <meta name="crystal_docs.project_name" content="hpack">
 
 
@@ -13,7 +14,7 @@
 <script type="text/javascript" src="../js/doc.js"></script>
 
   <meta name="repository-name" content="hpack">
-  <title>HPack::Huffman - hpack main</title>
+  <title>HPack::Huffman - hpack 1.4.0</title>
   <script type="text/javascript">
     CrystalDocs.base_path = "../";
   </script>
@@ -22,9 +23,14 @@
 
 <svg class="hidden">
   <symbol id="octicon-link" viewBox="0 0 16 16">
-    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+    <path fill="currentColor" fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
   </symbol>
 </svg>
+<input type="checkbox" id="sidebar-btn">
+<label for="sidebar-btn" id="sidebar-btn-label">
+  <svg class="open" xmlns="http://www.w3.org/2000/svg" height="2em" width="2em" viewBox="0 0 512 512"><title>Open Sidebar</title><path fill="currentColor" d="M80 96v64h352V96H80zm0 112v64h352v-64H80zm0 112v64h352v-64H80z"></path></svg>
+  <svg class="close" xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 512 512"><title>Close Sidebar</title><path fill="currentColor" d="m118.6 73.4-45.2 45.2L210.7 256 73.4 393.4l45.2 45.2L256 301.3l137.4 137.3 45.2-45.2L301.3 256l137.3-137.4-45.2-45.2L256 210.7Z"></path></svg>
+</label>
 <div class="sidebar">
   <div class="sidebar-header">
     <div class="search-box">
@@ -39,7 +45,7 @@
       </h1>
 
       <span class="project-version">
-        main
+        1.4.0
       </span>
     </div>
   </div>
@@ -56,8 +62,18 @@
       
         <ul>
   
+  <li class=" " data-id="hpack/HPack/DecodedHeader" data-name="hpack::decodedheader">
+      <a href="../HPack/DecodedHeader.html">DecodedHeader</a>
+      
+    </li>
+  
   <li class=" " data-id="hpack/HPack/Decoder" data-name="hpack::decoder">
       <a href="../HPack/Decoder.html">Decoder</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/DecodeResult" data-name="hpack::decoderesult">
+      <a href="../HPack/DecodeResult.html">DecodeResult</a>
       
     </li>
   
@@ -76,18 +92,23 @@
       
     </li>
   
-  <li class="parent open current" data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
-      <a href="../HPack/Huffman.html">Huffman</a>
-      
-        <ul>
-  
-  <li class=" " data-id="hpack/HPack/Huffman/Node" data-name="hpack::huffman::node">
-      <a href="../HPack/Huffman/Node.html">Node</a>
+  <li class=" " data-id="hpack/HPack/FieldOptions" data-name="hpack::fieldoptions">
+      <a href="../HPack/FieldOptions.html">FieldOptions</a>
       
     </li>
   
-</ul>
-
+  <li class=" " data-id="hpack/HPack/HeaderField" data-name="hpack::headerfield">
+      <a href="../HPack/HeaderField.html">HeaderField</a>
+      
+    </li>
+  
+  <li class=" current" data-id="hpack/HPack/Huffman" data-name="hpack::huffman">
+      <a href="../HPack/Huffman.html">Huffman</a>
+      
+    </li>
+  
+  <li class=" " data-id="hpack/HPack/HuffmanMode" data-name="hpack::huffmanmode">
+      <a href="../HPack/HuffmanMode.html">HuffmanMode</a>
       
     </li>
   
@@ -96,8 +117,8 @@
       
     </li>
   
-  <li class=" " data-id="hpack/HPack/SliceReader" data-name="hpack::slicereader">
-      <a href="../HPack/SliceReader.html">SliceReader</a>
+  <li class=" " data-id="hpack/HPack/ResourceLimitError" data-name="hpack::resourcelimiterror">
+      <a href="../HPack/ResourceLimitError.html">ResourceLimitError</a>
       
     </li>
   
@@ -115,12 +136,16 @@
 <div class="main-content">
 <h1 class="type-name">
 
-  <span class="kind">class</span> HPack::Huffman
+  <span class="kind">
+    class
+  </span> HPack::<wbr>Huffman
 
 </h1>
 
 
   <ul class="superclass-hierarchy"><li class="superclass"><a href="../HPack/Huffman.html">HPack::Huffman</a></li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
+
+
 
 
 
@@ -148,16 +173,12 @@
   </h2>
   
     
-      <a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/huffman.cr#L7" target="_blank">
-        huffman.cr
-      </a>
+      huffman.cr
     
     <br/>
   
     
-      <a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/huffman/node.cr#L2" target="_blank">
-        huffman/node.cr
-      </a>
+      huffman/decode_table.cr
     
     <br/>
   
@@ -166,6 +187,7 @@
 
 
 
+  
   <h2>
     <a id="constructors" class="anchor" href="#constructors">
   <svg class="octicon-link" aria-hidden="true">
@@ -184,9 +206,11 @@
   </ul>
 
 
+  
 
+  
 
-
+  
   <h2>
     <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
   <svg class="octicon-link" aria-hidden="true">
@@ -198,12 +222,58 @@
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#decode%28bytes%3ABytes%29-instance-method" class="signature"><strong>#decode</strong>(bytes : Bytes)</a>
+        <a href="#decode%28bytes%3ABytes%2Cdest%3ABytes%29%3AInt32-instance-method" class="signature"><strong>#decode</strong>(bytes : Bytes, dest : Bytes) : Int32</a>
+        
+          <div class="summary"><p>Huffman-decodes <em>bytes</em> into <em>dest</em>, starting at offset 0, writing through a raw pointer rather than a virtual <code>IO#write_byte</code> sink.</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#encode%28string%3AString%29-instance-method" class="signature"><strong>#encode</strong>(string : String)</a>
+        <a href="#decode%28bytes%3ABytes%2Coutput%3AIO%29%3ANil-instance-method" class="signature"><strong>#decode</strong>(bytes : Bytes, output : IO) : Nil</a>
+        
+          <div class="summary"><p>Decodes <em>bytes</em> and writes the result to <em>output</em>.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#decode%28bytes%3ABytes%29%3AString-instance-method" class="signature"><strong>#decode</strong>(bytes : Bytes) : String</a>
+        
+          <div class="summary"><p>Huffman-decodes <em>bytes</em> and returns a freshly allocated <code>String</code>.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#encode%28string%3AString%2Cdest%3ABytes%2Cbit_length%3AInt64%29%3AInt32-instance-method" class="signature"><strong>#encode</strong>(string : String, dest : Bytes, bit_length : Int64) : Int32</a>
+        
+          <div class="summary"><p>Huffman-encodes <em>string</em> into <em>dest</em>, starting at offset 0.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#encode%28string%3AString%29%3ABytes-instance-method" class="signature"><strong>#encode</strong>(string : String) : Bytes</a>
+        
+          <div class="summary"><p>Huffman-encodes <em>string</em> and returns a freshly allocated <code>Bytes</code>.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#encoded_bit_length%28string%3AString%29%3AInt64-instance-method" class="signature"><strong>#encoded_bit_length</strong>(string : String) : Int64</a>
+        
+          <div class="summary"><p>Returns the number of bits needed to Huffman-encode <em>string</em>.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#encoded_size%28string%3AString%29%3AInt32-instance-method" class="signature"><strong>#encoded_size</strong>(string : String) : Int32</a>
+        
+          <div class="summary"><p>Returns the byte size needed to Huffman-encode <em>string</em>.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#encoded_size%28bit_length%3AInt64%29%3AInt32-instance-method" class="signature"><strong>#encoded_size</strong>(bit_length : Int64) : Int32</a>
+        
+          <div class="summary"><p>Returns the byte size needed to Huffman-encode a string whose encoded bit length is <em>bit_length</em> (as returned by <code><a href="../HPack/Huffman.html#encoded_bit_length%28string%3AString%29%3AInt64-instance-method">#encoded_bit_length</a></code>).</p></div>
         
       </li>
     
@@ -211,33 +281,37 @@
 
 
 
+  <div class="methods-inherited">
+    
+      
 
 
-<div class="methods-inherited">
+      
+
+
+      
+
+
+      
+
+
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+  </div>
+
   
-    
-
-
-    
-
-
-    
-
-
-  
-    
-
-
-    
-
-
-    
-
-
-  
-</div>
-
-
   <h2>
     <a id="constructor-detail" class="anchor" href="#constructor-detail">
   <svg class="octicon-link" aria-hidden="true">
@@ -258,16 +332,16 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/huffman.cr#L17" target="_blank">View source</a>]
-        
       </div>
     </div>
   
 
 
+  
 
+  
 
-
+  
   <h2>
     <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
   <svg class="octicon-link" aria-hidden="true">
@@ -277,39 +351,198 @@
     Instance Method Detail
   </h2>
   
-    <div class="entry-detail" id="decode(bytes:Bytes)-instance-method">
+    <div class="entry-detail" id="decode(bytes:Bytes,dest:Bytes):Int32-instance-method">
       <div class="signature">
         
-        def <strong>decode</strong>(bytes : Bytes)
+        def <strong>decode</strong>(bytes : Bytes, dest : Bytes) : Int32
 
-        <a class="method-permalink" href="#decode%28bytes%3ABytes%29-instance-method">#</a>
+        <a class="method-permalink" href="#decode%28bytes%3ABytes%2Cdest%3ABytes%29%3AInt32-instance-method">#</a>
       </div>
+      
+        <div class="doc">
+          
+          <p>Huffman-decodes <em>bytes</em> into <em>dest</em>, starting at offset 0, writing
+through a raw pointer rather than a virtual <code>IO#write_byte</code> sink.</p>
+<p>Returns the number of bytes written. Returns <code>-1</code> if <em>dest</em> is too
+small to hold the fully decoded output; callers that enforce a decoded
+size cap (<code><a href="../HPack/Decoder.html#max_decoded_string_size%3AInt32%7CNil-instance-method">Decoder#max_decoded_string_size</a></code>) treat that return value as
+a size-violation rather than retrying with a larger buffer. Raises
+<code><a href="../HPack/Error.html">HPack::Error</a></code> on invalid Huffman padding or an encoded EOS symbol, same
+as the <code>String</code>-returning overload below.</p>
+        </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/huffman.cr#L46" target="_blank">View source</a>]
-        
       </div>
     </div>
   
-    <div class="entry-detail" id="encode(string:String)-instance-method">
+    <div class="entry-detail" id="decode(bytes:Bytes,output:IO):Nil-instance-method">
       <div class="signature">
         
-        def <strong>encode</strong>(string : String)
+        def <strong>decode</strong>(bytes : Bytes, output : IO) : Nil
 
-        <a class="method-permalink" href="#encode%28string%3AString%29-instance-method">#</a>
+        <a class="method-permalink" href="#decode%28bytes%3ABytes%2Coutput%3AIO%29%3ANil-instance-method">#</a>
       </div>
+      
+        <div class="doc">
+          
+          <p>Decodes <em>bytes</em> and writes the result to <em>output</em>.</p>
+<p>This method does not clear or rewind <em>output</em>. The caller owns and
+controls the output buffer.</p>
+<p>A thin compatibility wrapper over the pointer-sink <code><a href="../HPack/Huffman.html#decode%28bytes%3ABytes%2Cdest%3ABytes%29%3AInt32-instance-method">#decode(bytes, dest)</a></code>
+overload: it allocates a local destination sized to the maximum possible
+decoded output (same bound as the <code>String</code>-returning overload above), so
+the <code>-1</code> (undersized-destination) case can never occur here and is not
+checked for.</p>
+        </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/wyhaines/hpack.cr/blob/2d2dd050789b3dcb883e8356da8d877420bca372/src/huffman.cr#L26" target="_blank">View source</a>]
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="decode(bytes:Bytes):String-instance-method">
+      <div class="signature">
+        
+        def <strong>decode</strong>(bytes : Bytes) : String
+
+        <a class="method-permalink" href="#decode%28bytes%3ABytes%29%3AString-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Huffman-decodes <em>bytes</em> and returns a freshly allocated <code>String</code>.</p>
+<p>Allocates a local destination buffer sized to the maximum possible
+decoded output (Huffman codes are at least 5 bits, so decoded output
+never exceeds <code>bytes.size * 8 // 5 + 1</code> bytes); no shared or
+fiber-cached scratch buffer is used.</p>
+        </div>
+      
+      <br/>
+      <div>
         
       </div>
     </div>
   
+    <div class="entry-detail" id="encode(string:String,dest:Bytes,bit_length:Int64):Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>encode</strong>(string : String, dest : Bytes, bit_length : Int64) : Int32
 
+        <a class="method-permalink" href="#encode%28string%3AString%2Cdest%3ABytes%2Cbit_length%3AInt64%29%3AInt32-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Huffman-encodes <em>string</em> into <em>dest</em>, starting at offset 0.</p>
+<p><em>bit_length</em> must equal <code><a href="../HPack/Huffman.html#encoded_bit_length%28string%3AString%29%3AInt64-instance-method">#encoded_bit_length(string)</a></code> for this same
+<em>string</em> — it is trusted as a sizing hint, not re-derived, so the
+single sizing walk stays in the caller. That equality is verified as
+writes happen, not merely assumed: every store into <em>dest</em> is bounds
+checked against <code>dest.size</code> (raising <code><a href="../HPack/Error.html">HPack::Error</a></code> rather than
+corrupting memory through the unsafe pointer this method writes
+through if <em>bit_length</em> understates the true length), and once the
+string has been fully walked, the number of bytes actually written is
+compared against the <code>(bit_length + 7) // 8</code> byte count the caller
+implied; a mismatch (understated <em>or</em> overstated <em>bit_length</em>) raises
+<code><a href="../HPack/Error.html">HPack::Error</a></code> instead of silently returning a byte count that
+includes stale, previously-written <code>dest</code> contents.</p>
+<p>On success, writes exactly <code>(bit_length + 7) // 8</code> bytes and returns
+that count. <em>dest</em> must be at least that many bytes long; the caller
+(the <code><a href="../HPack/Encoder.html">Encoder</a></code>'s scratch buffer, in the common case) owns sizing it.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="encode(string:String):Bytes-instance-method">
+      <div class="signature">
+        
+        def <strong>encode</strong>(string : String) : Bytes
+
+        <a class="method-permalink" href="#encode%28string%3AString%29%3ABytes-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Huffman-encodes <em>string</em> and returns a freshly allocated <code>Bytes</code>.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="encoded_bit_length(string:String):Int64-instance-method">
+      <div class="signature">
+        
+        def <strong>encoded_bit_length</strong>(string : String) : Int64
+
+        <a class="method-permalink" href="#encoded_bit_length%28string%3AString%29%3AInt64-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Returns the number of bits needed to Huffman-encode <em>string</em>.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="encoded_size(string:String):Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>encoded_size</strong>(string : String) : Int32
+
+        <a class="method-permalink" href="#encoded_size%28string%3AString%29%3AInt32-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Returns the byte size needed to Huffman-encode <em>string</em>.</p>
+<p>Raises <code><a href="../HPack/Error.html">HPack::Error</a></code> if the encoded result cannot fit in a Crystal
+<code>Bytes</code> value.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="encoded_size(bit_length:Int64):Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>encoded_size</strong>(bit_length : Int64) : Int32
+
+        <a class="method-permalink" href="#encoded_size%28bit_length%3AInt64%29%3AInt32-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Returns the byte size needed to Huffman-encode a string whose encoded
+bit length is <em>bit_length</em> (as returned by <code><a href="../HPack/Huffman.html#encoded_bit_length%28string%3AString%29%3AInt64-instance-method">#encoded_bit_length</a></code>).</p>
+<p>Raises <code><a href="../HPack/Error.html">HPack::Error</a></code> if the encoded result cannot fit in a Crystal
+<code>Bytes</code> value. Public so callers that already have a bit length in
+hand (notably <code>Encoder#string</code>) can compute the byte size without
+duplicating this arithmetic.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
 
 
 
