@@ -438,7 +438,10 @@ module HPack
       @buffer.clear
       previous_writer = @writer
       @writer = @buffer
-      completed = false
+      # Not dead: if `yield` or the `output.write` below raises, control
+      # jumps straight to `ensure` without ever reaching `completed = true`,
+      # and `ensure` reads this `false` to know the block didn't complete.
+      completed = false # ameba:disable Lint/UselessAssign
       if transactional
         @table_transaction_active = true
         @transaction_insertions = 0
