@@ -24,7 +24,7 @@ jobs:
         crystal spec -t -s
         crystal spec -Dpreview_mt
     - name: Run Ameba
-      run: bin/ameba
+      run: crystal run lib/ameba/bin/ameba.cr
     - name: Compile benchmarks
       run: |
         crystal build benchmark.cr -o /tmp/hpack-benchmark
