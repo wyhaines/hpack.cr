@@ -40,8 +40,6 @@ module HPack
     # devirtualize at compile time instead of dispatching through `IO`.
     private getter writer : IO::Memory
     @buffer : IO::Memory
-    @pseudo_headers : Array(Tuple(String, Array(String)))
-    @regular_headers : Array(Tuple(String, Array(String)))
     @table_transaction_active : Bool
     # Transaction journal: how many `table.add` calls happened (regardless
     # of whether the entry survived later eviction within the same
@@ -77,8 +75,6 @@ module HPack
       normalized_max_table_size = normalize_table_size(max_table_size)
       @buffer = IO::Memory.new
       @writer = @buffer
-      @pseudo_headers = [] of Tuple(String, Array(String))
-      @regular_headers = [] of Tuple(String, Array(String))
       @table_transaction_active = false
       @transaction_insertions = 0
       @transaction_evicted = [] of Tuple(String, String)
@@ -564,62 +560,49 @@ module HPack
       table.rebuild_index
     end
 
+    # Two filtered passes over *headers* replace maintaining persistent
+    # partition arrays: pseudo-headers (name starts with ':') first, then
+    # regular headers, each group in its original relative iteration order.
+    # Neither pass allocates; `emit_header` holds the per-header encode body
+    # that both passes share.
     private def encode_headers(headers : HTTP::Headers, indexing, huffman, validate, &)
+      huffman_mode = huffman_mode(huffman)
       headers.each do |name, values|
-        partition = name.starts_with?(':') ? @pseudo_headers : @regular_headers
-        partition << {normalize_name(name), values}
+        next unless name.starts_with?(':')
+        emit_header(normalize_name(name), values, indexing, huffman_mode, validate) { |field_name, field_value| yield field_name, field_value }
       end
+      headers.each do |name, values|
+        next if name.starts_with?(':')
+        emit_header(normalize_name(name), values, indexing, huffman_mode, validate) { |field_name, field_value| yield field_name, field_value }
+      end
+    end
 
-      if validate
-        huffman_mode = huffman_mode(huffman)
-        @pseudo_headers.each do |name, values|
-          values.each do |value|
-            options = yield name, value
-            encode_policy_field(
-              name,
-              value,
-              nil,
-              nil,
-              options,
-              indexing,
-              huffman_mode,
-              true
-            )
-          end
-        end
-        @regular_headers.each do |name, values|
-          values.each do |value|
-            options = yield name, value
-            encode_policy_field(
-              name,
-              value,
-              nil,
-              nil,
-              options,
-              indexing,
-              huffman_mode,
-              true
-            )
-          end
-        end
-      else
-        huffman_mode = huffman_mode(huffman)
-        @pseudo_headers.each do |name, values|
-          values.each do |value|
-            yield name, value
-            encode_field(name, value, indexing, huffman_mode)
-          end
-        end
-        @regular_headers.each do |name, values|
-          values.each do |value|
-            yield name, value
-            encode_field(name, value, indexing, huffman_mode)
-          end
+    private def emit_header(
+      name : String,
+      values : Array(String),
+      indexing,
+      huffman_mode : HuffmanMode,
+      validate : Bool,
+      &
+    )
+      values.each do |value|
+        if validate
+          options = yield name, value
+          encode_policy_field(
+            name,
+            value,
+            nil,
+            nil,
+            options,
+            indexing,
+            huffman_mode,
+            true
+          )
+        else
+          yield name, value
+          encode_field(name, value, indexing, huffman_mode)
         end
       end
-    ensure
-      @pseudo_headers.clear
-      @regular_headers.clear
     end
 
     private def encode_tuple_fields(
