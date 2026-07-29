@@ -159,6 +159,22 @@ module HPack
       String.new(dest[0, n])
     end
 
+    # Decodes *bytes* and writes the result to *output*.
+    #
+    # This method does not clear or rewind *output*. The caller owns and
+    # controls the output buffer.
+    #
+    # A thin compatibility wrapper over the pointer-sink `#decode(bytes, dest)`
+    # overload: it allocates a local destination sized to the maximum possible
+    # decoded output (same bound as the `String`-returning overload above), so
+    # the `-1` (undersized-destination) case can never occur here and is not
+    # checked for.
+    def decode(bytes : Bytes, output : IO) : Nil
+      dest = Bytes.new(bytes.size * 8 // 5 + 1)
+      n = decode(bytes, dest)
+      output.write(dest[0, n])
+    end
+
     # Returns the byte size needed to Huffman-encode a string whose encoded
     # bit length is *bit_length* (as returned by `#encoded_bit_length`).
     #

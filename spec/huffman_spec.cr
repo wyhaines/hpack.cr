@@ -247,12 +247,22 @@ describe HPack::Huffman do
 
       n.should eq 1
       dest[0, n].should eq "!".to_slice
+      dest[n..].should eq Bytes.new(dest.size - n, 0xaa_u8)
     end
 
     it "returns -1 when the destination is too small for the decoded output" do
       encoded = HPack.huffman.encode("!")
 
       HPack.huffman.decode(encoded, Bytes.new(0)).should eq(-1)
+    end
+
+    it "writes decoded bytes to a caller-owned IO" do
+      output = IO::Memory.new
+      output << "prefix:"
+
+      HPack.huffman.decode(Bytes[0xfe_u8, 0x3f_u8], output)
+
+      output.to_s.should eq "prefix:!"
     end
 
     it "decodes a symbol that does not finish in the first byte" do
