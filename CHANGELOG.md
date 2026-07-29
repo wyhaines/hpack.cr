@@ -89,6 +89,6 @@ request block, `--release`.
 
 ### Testing
 
-- `crystal spec`: 158 examples, 0 failures.
-- `crystal spec -Dpreview_mt`: 160 examples, 0 failures.
+- `crystal spec`: 160 examples, 0 failures.
+- `crystal spec -Dpreview_mt`: 162 examples, 0 failures.
 - `bin/ameba src spec`: 0 offenses.
