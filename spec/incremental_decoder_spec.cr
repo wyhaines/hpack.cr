@@ -367,4 +367,9 @@ describe "HPack::Decoder decoded-string caps" do
     error.should be_a(Exception)
     error.should_not be_a(HPack::Error)
   end
+
+  it "decodes a Huffman literal when the cap is Int32::MAX" do
+    HPack::Decoder.new(max_decoded_string_size: Int32::MAX)
+      .decode(RFC_HUFFMAN_REQUEST)[":authority"].should eq "www.example.com"
+  end
 end

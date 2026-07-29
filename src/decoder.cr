@@ -417,7 +417,7 @@ module HPack
     private def huffman_string(encoded : Bytes) : String
       cap = @max_decoded_string_size
       bound = encoded.size * 8 // 5 + 1
-      bound = Math.min(bound, cap + 1) if cap
+      bound = cap + 1 if cap && cap < bound
 
       if @string_scratch.size < bound
         @string_scratch = Bytes.new(Math.pw2ceil(bound))
