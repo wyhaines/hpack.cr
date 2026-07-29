@@ -106,12 +106,7 @@ module HPack
     # `#table.resize` directly does not signal the peer decoder.
     def resize_table(size : Int) : Nil
       normalized_size = normalize_table_size(size)
-
-      {% if flag?(:preview_mt) %}
-        @mutex.synchronize { resize_table_unlocked(normalized_size) }
-      {% else %}
-        resize_table_unlocked(normalized_size)
-      {% end %}
+      synchronize { resize_table_unlocked(normalized_size) }
       nil
     end
 
@@ -135,18 +130,12 @@ module HPack
         return output.to_slice.dup
       end
 
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      with_writer(@buffer, indexing == Indexing::ALWAYS) do
-        encode_headers(headers, indexing, huffman, false) { nil }
+      synchronize do
+        with_writer(@buffer, indexing == Indexing::ALWAYS) do
+          encode_headers(headers, indexing, huffman, false) { nil }
+        end
+        @buffer.to_slice.dup
       end
-      @buffer.to_slice.dup
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
     end
 
     # Encodes *headers* using a policy evaluated once per field in wire order.
@@ -167,21 +156,15 @@ module HPack
       huffman : Bool | HuffmanMode = default_huffman,
       & : String, String -> FieldOptions?
     ) : Bytes
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      validate_indexing(indexing)
-      with_writer(@buffer, true) do
-        encode_headers(headers, indexing, huffman, true) do |name, value|
-          yield name, value
+      synchronize do
+        validate_indexing(indexing)
+        with_writer(@buffer, true) do
+          encode_headers(headers, indexing, huffman, true) do |name, value|
+            yield name, value
+          end
         end
+        @buffer.to_slice.dup
       end
-      @buffer.to_slice.dup
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
     end
 
     # Encodes ordered name/value *fields* and returns an owned byte slice.
@@ -195,18 +178,12 @@ module HPack
       indexing = default_indexing,
       huffman = default_huffman,
     ) : Bytes
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      with_writer(@buffer, indexing == Indexing::ALWAYS) do
-        encode_tuple_fields(fields, indexing, huffman, false) { nil }
+      synchronize do
+        with_writer(@buffer, indexing == Indexing::ALWAYS) do
+          encode_tuple_fields(fields, indexing, huffman, false) { nil }
+        end
+        @buffer.to_slice.dup
       end
-      @buffer.to_slice.dup
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
     end
 
     # Encodes ordered tuple *fields* using a per-field policy block.
@@ -219,21 +196,15 @@ module HPack
       huffman : Bool | HuffmanMode = default_huffman,
       & : String, String -> FieldOptions?
     ) : Bytes
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      validate_indexing(indexing)
-      with_writer(@buffer, true) do
-        encode_tuple_fields(fields, indexing, huffman, true) do |name, value|
-          yield name, value
+      synchronize do
+        validate_indexing(indexing)
+        with_writer(@buffer, true) do
+          encode_tuple_fields(fields, indexing, huffman, true) do |name, value|
+            yield name, value
+          end
         end
+        @buffer.to_slice.dup
       end
-      @buffer.to_slice.dup
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
     end
 
     # Encodes ordered fields with optional per-field overrides.
@@ -242,19 +213,13 @@ module HPack
       indexing : Indexing = default_indexing,
       huffman : Bool | HuffmanMode = default_huffman,
     ) : Bytes
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      validate_indexing(indexing)
-      with_writer(@buffer, true) do
-        encode_header_fields(fields, indexing, huffman) { nil }
+      synchronize do
+        validate_indexing(indexing)
+        with_writer(@buffer, true) do
+          encode_header_fields(fields, indexing, huffman) { nil }
+        end
+        @buffer.to_slice.dup
       end
-      @buffer.to_slice.dup
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
     end
 
     # Encodes ordered fields with explicit options and a policy block.
@@ -267,21 +232,15 @@ module HPack
       huffman : Bool | HuffmanMode = default_huffman,
       & : String, String -> FieldOptions?
     ) : Bytes
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      validate_indexing(indexing)
-      with_writer(@buffer, true) do
-        encode_header_fields(fields, indexing, huffman) do |name, value|
-          yield name, value
+      synchronize do
+        validate_indexing(indexing)
+        with_writer(@buffer, true) do
+          encode_header_fields(fields, indexing, huffman) do |name, value|
+            yield name, value
+          end
         end
+        @buffer.to_slice.dup
       end
-      @buffer.to_slice.dup
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
     end
 
     # Encodes decoded fields while preserving each field's indexing marker.
@@ -293,18 +252,12 @@ module HPack
       *,
       huffman : Bool | HuffmanMode = default_huffman,
     ) : Bytes
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      with_writer(@buffer, true) do
-        encode_decoded_fields(fields, huffman)
+      synchronize do
+        with_writer(@buffer, true) do
+          encode_decoded_fields(fields, huffman)
+        end
+        @buffer.to_slice.dup
       end
-      @buffer.to_slice.dup
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
     end
 
     # Appends one encoded block for *headers* to *output*.
@@ -323,17 +276,11 @@ module HPack
       indexing = default_indexing,
       huffman = default_huffman,
     ) : Nil
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      with_writer(output, indexing == Indexing::ALWAYS) do
-        encode_headers(headers, indexing, huffman, false) { nil }
+      synchronize do
+        with_writer(output, indexing == Indexing::ALWAYS) do
+          encode_headers(headers, indexing, huffman, false) { nil }
+        end
       end
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
       nil
     end
 
@@ -354,20 +301,14 @@ module HPack
       huffman : Bool | HuffmanMode = default_huffman,
       & : String, String -> FieldOptions?
     ) : Nil
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      validate_indexing(indexing)
-      with_writer(output, true) do
-        encode_headers(headers, indexing, huffman, true) do |name, value|
-          yield name, value
+      synchronize do
+        validate_indexing(indexing)
+        with_writer(output, true) do
+          encode_headers(headers, indexing, huffman, true) do |name, value|
+            yield name, value
+          end
         end
       end
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
       nil
     end
 
@@ -388,17 +329,11 @@ module HPack
       indexing = default_indexing,
       huffman = default_huffman,
     ) : Nil
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      with_writer(output, indexing == Indexing::ALWAYS) do
-        encode_tuple_fields(fields, indexing, huffman, false) { nil }
+      synchronize do
+        with_writer(output, indexing == Indexing::ALWAYS) do
+          encode_tuple_fields(fields, indexing, huffman, false) { nil }
+        end
       end
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
       nil
     end
 
@@ -416,20 +351,14 @@ module HPack
       huffman : Bool | HuffmanMode = default_huffman,
       & : String, String -> FieldOptions?
     ) : Nil
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      validate_indexing(indexing)
-      with_writer(output, true) do
-        encode_tuple_fields(fields, indexing, huffman, true) do |name, value|
-          yield name, value
+      synchronize do
+        validate_indexing(indexing)
+        with_writer(output, true) do
+          encode_tuple_fields(fields, indexing, huffman, true) do |name, value|
+            yield name, value
+          end
         end
       end
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
       nil
     end
 
@@ -446,18 +375,12 @@ module HPack
       indexing : Indexing = default_indexing,
       huffman : Bool | HuffmanMode = default_huffman,
     ) : Nil
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      validate_indexing(indexing)
-      with_writer(output, true) do
-        encode_header_fields(fields, indexing, huffman) { nil }
+      synchronize do
+        validate_indexing(indexing)
+        with_writer(output, true) do
+          encode_header_fields(fields, indexing, huffman) { nil }
+        end
       end
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
       nil
     end
 
@@ -475,20 +398,14 @@ module HPack
       huffman : Bool | HuffmanMode = default_huffman,
       & : String, String -> FieldOptions?
     ) : Nil
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      validate_indexing(indexing)
-      with_writer(output, true) do
-        encode_header_fields(fields, indexing, huffman) do |name, value|
-          yield name, value
+      synchronize do
+        validate_indexing(indexing)
+        with_writer(output, true) do
+          encode_header_fields(fields, indexing, huffman) do |name, value|
+            yield name, value
+          end
         end
       end
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
       nil
     end
 
@@ -505,18 +422,20 @@ module HPack
       *,
       huffman : Bool | HuffmanMode = default_huffman,
     ) : Nil
-      {% begin %}
-      {% if flag?(:preview_mt) %}
-      @mutex.synchronize do
-      {% end %}
-      with_writer(output, true) do
-        encode_decoded_fields(fields, huffman)
+      synchronize do
+        with_writer(output, true) do
+          encode_decoded_fields(fields, huffman)
+        end
       end
-      {% if flag?(:preview_mt) %}
-      end
-      {% end %}
-      {% end %}
       nil
+    end
+
+    private def synchronize(&)
+      {% if flag?(:preview_mt) %}
+        @mutex.synchronize { yield }
+      {% else %}
+        yield
+      {% end %}
     end
 
     private def with_writer(output : IO, transactional : Bool, &)
