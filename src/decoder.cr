@@ -40,7 +40,7 @@ module HPack
   # result.limit_exceeded # => false
   # ```
   class Decoder
-    private getter! reader : SliceReader
+    private getter reader : SliceReader
     getter table : DynamicTable
     getter max_table_size : Int32
 
@@ -61,6 +61,7 @@ module HPack
       @table = DynamicTable.new(@max_table_size)
       @required_table_size_update = nil
       @string_scratch = Bytes.new(256)
+      @reader = SliceReader.new(Bytes.empty)
     end
 
     # Changes the protocol limit for dynamic-table size updates.
@@ -147,7 +148,7 @@ module HPack
 
       result =
         begin
-          @reader = SliceReader.new(bytes)
+          reader.reset(bytes)
           decoded_header = false
           table_size_update_count = 0
           decoded_size = 0_u64
